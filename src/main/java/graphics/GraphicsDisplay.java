@@ -1,5 +1,6 @@
 package graphics;
 
+import controller.Camera;
 import controller.RTController;
 import controller.Settings;
 import graphics.translateObjects.Translation;
@@ -22,7 +23,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class GraphicsDisplay {
 
     /**Параметры GUI*/
-    private final int width, height;
+    public final int width, height;
     private final String name;
     private long window;
     /**Вспомогательные поля*/
@@ -72,7 +73,12 @@ public class GraphicsDisplay {
         this.height = height;
         this.width = width;
         this.name = name;
+
         this.rtController = rtController;
+    }
+
+    public long getWindow(){
+        return window;
     }
 
     /**Запуск GUI*/
@@ -112,11 +118,11 @@ public class GraphicsDisplay {
             throw new RuntimeException("Failed to create the GLFW window");
 
         // Set up a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+        /*glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window, true);
             }
-        });
+        });*/
 
         // Get the thread stack and push a new frame
         try (MemoryStack stack = stackPush()) {
@@ -141,7 +147,7 @@ public class GraphicsDisplay {
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
         // Enable v-sync
-        //glfwSwapInterval(1);
+        glfwSwapInterval(1);
 
         // Make the window visible
         glfwShowWindow(window);
@@ -159,19 +165,18 @@ public class GraphicsDisplay {
         Texture texture = new Texture(Settings.textureName, Settings.textureWidth, Settings.textureHeight);
         texture.texUnit(shader, "tex0", 0);
 
-        Camera camera = new Camera(width, height, new Vector3f(0.0f, 0.0f, 2.0f), this);
 
         DataTransformation dataTransformation = new DataTransformation(rtController);
 
         Translation translation = new Translation(dataTransformation);
 
-        dataTransformation.update();
-        translation.update();
+        //dataTransformation.update();
+        //translation.update();
 
         while (!glfwWindowShouldClose(window)) {
 
-            //dataTransformation.update();
-            //translation.update();
+            dataTransformation.update();
+            translation.update();
 
 
             glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
@@ -179,8 +184,10 @@ public class GraphicsDisplay {
 
             shader.activate();
 
-            camera.Inputs(window);
-            camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");
+            rtController.environmentInput(window);
+            rtController.modelInput(window);
+            rtController.changeSpeed(window);
+            rtController.updateCamera(shader);
 
             texture.bind();
             translation.setupVAO();
@@ -189,7 +196,7 @@ public class GraphicsDisplay {
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-            printRenderTime();
+            //printRenderTime();
         }
 
         translation.destroy();

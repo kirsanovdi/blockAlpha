@@ -25,7 +25,7 @@ public class Shader {
         glDeleteShader(fragmentShader);
     }
 
-    int getId() {
+    public int getId() {
         return id;
     }
 
