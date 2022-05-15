@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 public class Main {
     @Test
-    public void test1(){
+    public void test1() {
         RTController runtimeController = new RTController();
 
         GraphicsDisplay graphicsDisplay = new GraphicsDisplay(runtimeController, 1920, 1080, "Setup");

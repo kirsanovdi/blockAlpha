@@ -16,20 +16,19 @@ public class RTController {
 
     public Set<Commands> commandsSet;
     private HashMap<Commands, Boolean> commandsHashSet;
-    private boolean clickHandler;
+
     public boolean wasInputHandled;
 
     private boolean isRunning = true;
 
     public void run() {
-        if(engineRuntime == null) throw new RuntimeException("engineRuntime was null");
-        if(graphicsDisplay == null) throw new RuntimeException("graphicsDisplay was null");
+        if (engineRuntime == null) throw new RuntimeException("engineRuntime was null");
+        if (graphicsDisplay == null) throw new RuntimeException("graphicsDisplay was null");
         commandsSet = new LinkedHashSet<>();
         commandsHashSet = new HashMap<>();
         commandsHashSet.put(REMOVE, true);
         commandsHashSet.put(ADD, true);
         commandsHashSet.put(JUMP, true);
-        clickHandler = true;
         wasInputHandled = true;
         Thread thread = new Thread(engineRuntime::run);
         thread.start();
@@ -41,11 +40,11 @@ public class RTController {
         }
     }
 
-    public void hookGraphicsDisplay(GraphicsDisplay graphicsDisplay){
+    public void hookGraphicsDisplay(GraphicsDisplay graphicsDisplay) {
         this.graphicsDisplay = graphicsDisplay;
     }
 
-    public void hookEngineRuntime(EngineRuntime engineRuntime){
+    public void hookEngineRuntime(EngineRuntime engineRuntime) {
         this.engineRuntime = engineRuntime;
     }
 
@@ -61,19 +60,19 @@ public class RTController {
         return isRunning;
     }
 
-    public void toClose(){
+    public void toClose() {
         isRunning = false;
     }
 
-    private void lockKey(Commands command){
+    private void lockKey(Commands command) {
         commandsHashSet.put(command, false);
     }
 
-    private void unlockKey(Commands command){
+    private void unlockKey(Commands command) {
         commandsHashSet.put(command, true);
     }
 
-    private boolean getKeyValue(Commands command){
+    private boolean getKeyValue(Commands command) {
         return commandsHashSet.get(command);
     }
 
@@ -104,18 +103,18 @@ public class RTController {
             commandsSet.add(JUMP);
             lockKey(JUMP);
         }
-        if(!getKeyValue(JUMP) && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) unlockKey(JUMP);
+        if (!getKeyValue(JUMP) && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) unlockKey(JUMP);
 
         if (getKeyValue(REMOVE) && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
             commandsSet.add(REMOVE);
             lockKey(REMOVE);
         }
-        if(!getKeyValue(REMOVE) && glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) unlockKey(REMOVE);
+        if (!getKeyValue(REMOVE) && glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) unlockKey(REMOVE);
 
         if (getKeyValue(ADD) && glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
             commandsSet.add(ADD);
             lockKey(ADD);
         }
-        if(!getKeyValue(ADD) && glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) unlockKey(ADD);
+        if (!getKeyValue(ADD) && glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) unlockKey(ADD);
     }
 }

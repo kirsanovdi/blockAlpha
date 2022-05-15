@@ -45,7 +45,7 @@ public class Camera {
         }
     }
 
-    public void setPos(Vector3f position){
+    public void setPos(Vector3f position) {
         this.position.x = position.x;
         this.position.y = position.y;
         this.position.z = position.z;
@@ -56,8 +56,7 @@ public class Camera {
             cursorHookHandler = true;
         }
 
-        //if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
-        if(cursorHookHandler) {
+        if (cursorHookHandler) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             if (firstClick) {
                 glfwSetCursorPos(window, width / 2.0f, height / 2.0f);

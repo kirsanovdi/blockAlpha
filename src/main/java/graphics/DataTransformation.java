@@ -21,7 +21,7 @@ public class DataTransformation {
 
     public void update() {
         reset();
-        for(Block block: engineRuntime.blocks.values()){
+        for (Block block : engineRuntime.blocks.values()) {
             transferBlock(block);
         }
     }
@@ -73,7 +73,7 @@ public class DataTransformation {
         transfer(tempCordsRaw, tempIndicesRaw);
     }
 
-    public void transferBlock(Block block){
+    public void transferBlock(Block block) {
         final float delta = Settings.blockSize / 2.0f;
         final Vector3f center = new Vector3f(block.cord).add(delta, delta, delta);
         final Vector3f[] vertex = new Vector3f[]{
@@ -86,11 +86,11 @@ public class DataTransformation {
                 new Vector3f(center.x - delta, center.y + delta, center.z + delta),//6 - near up left
                 new Vector3f(center.x + delta, center.y + delta, center.z + delta) //7 - near up right
         };
-        if(block.sideRender[0]) transferSquare(vertex[4], vertex[6], vertex[7], vertex[5], block.sideIds[0]);//near
-        if(block.sideRender[1]) transferSquare(vertex[6], vertex[2], vertex[3], vertex[7], block.sideIds[1]);//up
-        if(block.sideRender[2]) transferSquare(vertex[0], vertex[4], vertex[5], vertex[1], block.sideIds[2]);//down
-        if(block.sideRender[3]) transferSquare(vertex[1], vertex[3], vertex[2], vertex[0], block.sideIds[3]);//far
-        if(block.sideRender[4]) transferSquare(vertex[0], vertex[2], vertex[6], vertex[4], block.sideIds[4]);//left
-        if(block.sideRender[5]) transferSquare(vertex[5], vertex[7], vertex[3], vertex[1], block.sideIds[5]);//right
+        if (block.sideRender[0]) transferSquare(vertex[4], vertex[6], vertex[7], vertex[5], block.sideIds[0]);//near
+        if (block.sideRender[1]) transferSquare(vertex[6], vertex[2], vertex[3], vertex[7], block.sideIds[1]);//up
+        if (block.sideRender[2]) transferSquare(vertex[0], vertex[4], vertex[5], vertex[1], block.sideIds[2]);//down
+        if (block.sideRender[3]) transferSquare(vertex[1], vertex[3], vertex[2], vertex[0], block.sideIds[3]);//far
+        if (block.sideRender[4]) transferSquare(vertex[0], vertex[2], vertex[6], vertex[4], block.sideIds[4]);//left
+        if (block.sideRender[5]) transferSquare(vertex[5], vertex[7], vertex[3], vertex[1], block.sideIds[5]);//right
     }
 }

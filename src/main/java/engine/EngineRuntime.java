@@ -124,11 +124,11 @@ public class EngineRuntime {
         return genBlocks.values().toArray(new Block[0]);
     }
 
-    public static Block[] generateBlockLayer(int delta){
-        final Block[] result = new Block[delta*delta];
-        for(int z = 0; z < delta; z++){
-            for(int x = 0; x < delta; x++){
-                result[z*delta + x] = new Block(new Vector3i(x - delta/2, 5, z - delta/2), 0, new int[]{0,0,0,0,0,0});
+    public static Block[] generateBlockLayer(int delta) {
+        final Block[] result = new Block[delta * delta];
+        for (int z = 0; z < delta; z++) {
+            for (int x = 0; x < delta; x++) {
+                result[z * delta + x] = new Block(new Vector3i(x - delta / 2, 5, z - delta / 2), 0, new int[]{0, 0, 0, 0, 0, 0});
             }
         }
         return result;
