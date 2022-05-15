@@ -3,7 +3,6 @@ package engine;
 import controller.Commands;
 import controller.RTController;
 import controller.Settings;
-import controller.Camera;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -25,20 +24,19 @@ public class EngineRuntime {
     public ConcurrentHashMap<Vector3i, Block> blocks;
     private final RTController rtController;
 
-    private final Camera camera;
+    private final Model model;
 
     private Vector3i selectedCord, lastCord;
-    public boolean click = false;
 
     public EngineRuntime(RTController rtController, Block[] initBlocks) {
         this.rtController = rtController;
-        camera = rtController.camera;
+        model = new Model(new Vector3f(0.0f, 0.0f, 0.0f), 0.5f, rtController.getGraphicsDisplay().getCamera());
         selectedCord = null;
         lastCord = null;
         setBlocks(initBlocks);
     }
 
-    private void setBlocks(Block[] initBlocks){
+    private void setBlocks(Block[] initBlocks) {
         blocks = new ConcurrentHashMap<>();
         for (Block initBlock : initBlocks) {
             if (initBlock == null) throw new RuntimeException("initBlock was null");
@@ -125,18 +123,18 @@ public class EngineRuntime {
         return genBlocks.values().toArray(new Block[0]);
     }
 
-    public boolean checkCord(Vector3i vector3i){
+    public boolean checkCord(Vector3i vector3i) {
         return blocks.containsKey(vector3i);
     }
 
-    protected void checkNearest(){
-        Vector3f model = camera.position;
-        Vector3i modelInt = new Vector3i((int)model.x - 2, (int)model.y - 2, (int)model.z - 2);
-        for(int dx = 0; dx < 5; dx++){
-            for(int dy = 0; dy < 5; dy++){
-                for(int dz = 0; dz < 5; dz++){
+    protected void checkNearest() {
+        Vector3f pos = model.getPosition();
+        Vector3i modelInt = new Vector3i((int) pos.x - 2, (int) pos.y - 2, (int) pos.z - 2);
+        for (int dx = 0; dx < 5; dx++) {
+            for (int dy = 0; dy < 5; dy++) {
+                for (int dz = 0; dz < 5; dz++) {
                     Vector3i checkedVector3i = new Vector3i(modelInt).add(dx, dy, dz);
-                    if(checkCord(checkedVector3i)){
+                    if (checkCord(checkedVector3i)) {
                         System.out.println(System.currentTimeMillis() + "\t" + checkedVector3i + " is near");
                     }
                 }
@@ -144,21 +142,22 @@ public class EngineRuntime {
         }
     }
 
-    protected void rayTrace(){
-        Vector3f orientation = rtController.camera.orientation;
-        Vector3f pos = new Vector3f(camera.position);
-        Vector3f dir = new Vector3f(orientation).div(Settings.rayPrecision);
+    protected void rayTrace() {
+        final Vector3f orientation = model.getOrientation();
+        final Vector3f pos = model.getPosition();
+        final Vector3i startPosI = new Vector3i((int) pos.x, (int) pos.y, (int) pos.z);
+        final Vector3f dir = new Vector3f(orientation).div(Settings.rayPrecision);
 
 
         Vector3i lastCheckedPos = null;
         lastCord = null;
         selectedCord = null;
 
-        for(int i = 0; i < Settings.rayDistance*Settings.rayPrecision; i++){
+        for (int i = 0; i < Settings.rayDistance * Settings.rayPrecision; i++) {
             pos.add(dir);
-            Vector3i posI = new Vector3i((int)pos.x, (int)pos.y, (int)pos.z);
-            if(checkCord(posI)){
-                if(lastCheckedPos != null && !lastCheckedPos.equals(camera.position)) {
+            Vector3i posI = new Vector3i((int) pos.x, (int) pos.y, (int) pos.z);
+            if (checkCord(posI)) {
+                if (lastCheckedPos != null && !lastCheckedPos.equals(startPosI)) {
                     lastCord = lastCheckedPos;
                     selectedCord = posI;
                 }
@@ -169,31 +168,23 @@ public class EngineRuntime {
         //if(lastCheckedPos == null) throw new RuntimeException("rayTrace from existing block");
     }
 
-    private void moveCamera(){
-        /*final Set<Commands> commands = rtController.commands;
-        final Vector3f convertOrientation = new Vector3f(camera.orientation);
-        if(commands.contains(FORWARD)) camera.moveForward(convertOrientation);
-        if(commands.contains(BACKWARD)) camera.moveBackward(convertOrientation);
-        if(commands.contains(LEFT)) camera.moveLeft(convertOrientation);
-        if(commands.contains(RIGHT)) camera.moveRight(convertOrientation);*/
+    public void createBlock(Vector3i vector3i) {
+        blocks.put(vector3i, new Block(vector3i, 0, new int[]{1, 1, 1, 1, 1, 1}));
     }
 
-    private void handleInput(){
-        if(!rtController.wasInputHandled){
-            moveCamera();
-            rtController.wasInputHandled = true;
-        }
+    private void handleInput(Set<Commands> commandsSet) {
+        if (commandsSet.contains(REMOVE) && selectedCord != null) blocks.remove(selectedCord);
+        if (commandsSet.contains(ADD) && lastCord != null) createBlock(lastCord);
     }
 
     public void run() {
         System.out.println("engineRuntime started");
-        while (rtController.isRunning()){
-            //checkNearest();
-
-            //handleInput();
+        while (rtController.isRunning()) {
+            model.handleInput(rtController.commandsSet);
+            this.handleInput(rtController.commandsSet);
             rayTrace();
             try {
-                Thread.sleep(20L);
+                Thread.sleep(5L);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

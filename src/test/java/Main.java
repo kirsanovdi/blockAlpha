@@ -11,7 +11,6 @@ public class Main {
 
         GraphicsDisplay graphicsDisplay = new GraphicsDisplay(runtimeController, 1080, 720, "Setup");
         runtimeController.hookGraphicsDisplay(graphicsDisplay);
-        runtimeController.setupCamera();
 
         EngineRuntime runtime = new EngineRuntime(runtimeController, EngineRuntime.generateRndBlocks(1000, 150));
         runtimeController.hookEngineRuntime(runtime);

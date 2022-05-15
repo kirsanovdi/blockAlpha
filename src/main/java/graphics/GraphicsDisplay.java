@@ -1,6 +1,5 @@
 package graphics;
 
-import controller.Camera;
 import controller.RTController;
 import controller.Settings;
 import graphics.translateObjects.Translation;
@@ -30,6 +29,7 @@ public class GraphicsDisplay {
     private double frames, lastTime;
     
     private final RTController rtController;
+    private final Camera camera;
 
     /**Подсчёт и вывод fps*/
     private void printRenderTime() {
@@ -73,7 +73,7 @@ public class GraphicsDisplay {
         this.height = height;
         this.width = width;
         this.name = name;
-
+        this.camera = new Camera(width, height, new Vector3f(0.0f, 0.0f, 2.0f));
         this.rtController = rtController;
     }
 
@@ -91,6 +91,10 @@ public class GraphicsDisplay {
         // Terminate GLFW and free the error callback
         glfwTerminate();
         glfwSetErrorCallback(null).free();
+    }
+
+    public Camera getCamera(){
+        return camera;
     }
 
     /**инициализация GLFW, окна и Callback функций*/
@@ -180,10 +184,12 @@ public class GraphicsDisplay {
 
             shader.activate();
 
-            rtController.environmentInput(window);
-            rtController.modelInput(window);
-            rtController.changeSpeed(window);
-            rtController.updateCamera(shader);
+            //rtController.environmentInput(window);
+            //rtController.modelInput(window);
+            //rtController.changeSpeed(window);
+            rtController.Input(window);
+            camera.mouseInput(window);
+            camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");
 
             texture.bind();
             translation.setupVAO();

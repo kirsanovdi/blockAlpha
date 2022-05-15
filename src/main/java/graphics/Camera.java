@@ -1,7 +1,5 @@
-package controller;
+package graphics;
 
-import graphics.GraphicsDisplay;
-import graphics.Shader;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
@@ -11,33 +9,25 @@ import static org.lwjgl.opengl.GL33.glGetUniformLocation;
 import static org.lwjgl.opengl.GL33.glUniformMatrix4fv;
 
 public class Camera {
-    /**Параметры камеры*/
-    private final GraphicsDisplay graphicsDisplay;
-    private final RTController rtController;
     private final Vector3f up;
     public final int width, height;
 
     public final Vector3f position, orientation;
-    public float speed = 0.1f, sensitivity = 100.0f;
+    public float sensitivity = 100.0f;
 
     private static final float pi = 3.14159265359f;
-    private boolean firstClick;//, wasReleased;
+    private boolean firstClick;
 
-    protected Camera(int width, int height, Vector3f position, GraphicsDisplay graphicsDisplay, RTController rtController) {
+    public Camera(int width, int height, Vector3f position) {
         up = new Vector3f(0.0f, 1.0f, 0.0f);
         firstClick = false;
-        //wasReleased = true;
         this.height = height;
         this.width = width;
         this.orientation = new Vector3f(0.0f, 0.0f, -1.0f);
         this.position = position;
-        this.graphicsDisplay = graphicsDisplay;
-        this.rtController = rtController;
-        //personModel.backhookCamera(this);
     }
 
-    protected void Matrix(float FOVdeg, float nearPlane, float farPlane, Shader shader, String uniform) {
-
+    public void Matrix(float FOVdeg, float nearPlane, float farPlane, Shader shader, String uniform) {
         Matrix4f view = new Matrix4f();
         Vector3f center = new Vector3f().add(position).add(orientation);
         view = view.lookAt(position, center, up);
@@ -53,32 +43,13 @@ public class Camera {
         }
     }
 
-    public void moveForward(Vector3f movingOrientation){
-        System.out.println(speed);
-        position.add(new Vector3f(movingOrientation).mul(speed));
-        System.out.println(speed);
-    }
-    public void moveBackward(Vector3f movingOrientation){
-        position.add(new Vector3f(movingOrientation).mul(-speed));
-    }
-    public void moveRight(Vector3f movingOrientation){
-        position.add(new Vector3f(movingOrientation).cross(up).normalize().mul(speed));
-    }
-    public void moveLeft(Vector3f movingOrientation){
-        position.add(new Vector3f(movingOrientation).cross(up).normalize().mul(-speed));
+    public void setPos(Vector3f position){
+        this.position.x = position.x;
+        this.position.y = position.y;
+        this.position.z = position.z;
     }
 
-    protected void changeSpeed(float speed){
-        this.speed = speed;
-    }
-
-    protected void mouseInput(long window) {
-        /*if (wasReleased && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS){
-            rtController.getEngineRuntime().click = true;
-            wasReleased = false;
-        }
-        if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) wasReleased = true;*/
-
+    public void mouseInput(long window) {
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             if (firstClick) {

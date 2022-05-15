@@ -2,32 +2,34 @@ package controller;
 
 import engine.EngineRuntime;
 import graphics.GraphicsDisplay;
-import graphics.Shader;
-import org.joml.Vector3f;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static controller.Commands.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static controller.Commands.*;
 
 public class RTController {
     private EngineRuntime engineRuntime;
     private GraphicsDisplay graphicsDisplay;
 
-    //public Set<Commands> commands;
+    public Set<Commands> commandsSet;
+    private HashMap<Commands, Boolean> commandsHashSet;
     private boolean clickHandler;
     public boolean wasInputHandled;
 
-    public Camera camera;
+    //public Camera camera;
 
     private boolean isRunning = true;
 
     public void run() {
         if(engineRuntime == null) throw new RuntimeException("engineRuntime was null");
         if(graphicsDisplay == null) throw new RuntimeException("graphicsDisplay was null");
-        //commands = null;
+        commandsSet = new LinkedHashSet<>();
+        commandsHashSet = new HashMap<>();
+        commandsHashSet.put(REMOVE, true);
+        commandsHashSet.put(ADD, true);
         clickHandler = true;
         wasInputHandled = true;
         Thread thread = new Thread(engineRuntime::run);
@@ -48,10 +50,6 @@ public class RTController {
         this.engineRuntime = engineRuntime;
     }
 
-    public void setupCamera(){
-        camera = new Camera(graphicsDisplay.width, graphicsDisplay.height, new Vector3f(0.0f, 0.0f, 2.0f), graphicsDisplay, this);
-    }
-
     public EngineRuntime getEngineRuntime() {
         return engineRuntime;
     }
@@ -68,7 +66,22 @@ public class RTController {
         isRunning = false;
     }
 
-    public void environmentInput(long window){
+
+
+    private void lockKey(Commands command){
+        commandsHashSet.put(command, false);
+    }
+
+    private void unlockKey(Commands command){
+        commandsHashSet.put(command, true);
+    }
+
+    private boolean getKeyValue(Commands command){
+        return commandsHashSet.get(command);
+    }
+
+
+    /*public void environmentInput(long window){
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, true);
             toClose();
@@ -92,35 +105,70 @@ public class RTController {
     public void changeSpeed(long window){
         //System.out.println(camera.speed);
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            camera.changeSpeed(1.0f);
+            commands.add(SPEED_1);
         }
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
-            camera.changeSpeed(0.1f);
+            commands.add(SPEED_01);
         }
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            camera.changeSpeed(0.025f);
+            commands.add(SPEED_0025);
         }
     }
 
     public void modelInput(long window){
-        final Vector3f convertOrientation = new Vector3f(camera.orientation);
-        convertOrientation.y = 0f;
+        //final Vector3f convertOrientation = new Vector3f(camera.orientation);
+        //convertOrientation.y = 0f;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            camera.moveForward(convertOrientation);
+            commands.add(FORWARD);
+            //camera.moveForward(convertOrientation);
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            camera.moveBackward(convertOrientation);
+            commands.add(BACKWARD);
+            //camera.moveBackward(convertOrientation);
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            camera.moveLeft(convertOrientation);
+            commands.add(LEFT);
+            //camera.moveLeft(convertOrientation);
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            camera.moveRight(convertOrientation);
+            commands.add(RIGHT);
+            //camera.moveRight(convertOrientation);
         }
-        camera.mouseInput(window);
-    }
+    }*/
 
-    public void updateCamera(Shader shader){
-        camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");
+    public void Input(long window) {
+        commandsSet = new LinkedHashSet<>();
+
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, true);
+            toClose();
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) engineRuntime.saveState("state1");
+        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) engineRuntime.loadState("state1");
+
+        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) engineRuntime.saveState("state2");
+        if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) engineRuntime.loadState("state2");
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) commandsSet.add(SPEED_1);
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) commandsSet.add(SPEED_01);
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) commandsSet.add(SPEED_0025);
+
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) commandsSet.add(FORWARD);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) commandsSet.add(BACKWARD);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) commandsSet.add(LEFT);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) commandsSet.add(RIGHT);
+
+        if (getKeyValue(REMOVE) && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+            commandsSet.add(REMOVE);
+            lockKey(REMOVE);
+        }
+        if(!getKeyValue(REMOVE) && glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) unlockKey(REMOVE);
+
+        if (getKeyValue(ADD) && glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+            commandsSet.add(ADD);
+            lockKey(ADD);
+        }
+        if(!getKeyValue(ADD) && glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) unlockKey(ADD);
     }
 }
