@@ -22,7 +22,7 @@ public class DataTransformation {
 
     public void update() {
         reset();
-        for(Block block: engineRuntime.blocks.values().toArray(new Block[0])){
+        for(Block block: engineRuntime.blocks.values()){
             transferBlock(block);
         }
     }

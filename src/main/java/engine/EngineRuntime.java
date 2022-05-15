@@ -1,5 +1,6 @@
 package engine;
 
+import controller.Commands;
 import controller.RTController;
 import controller.Settings;
 import controller.Camera;
@@ -12,33 +13,39 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static controller.Commands.*;
+
 public class EngineRuntime {
 
-    public HashMap<Vector3i, Block> blocks;
+    public ConcurrentHashMap<Vector3i, Block> blocks;
     private final RTController rtController;
 
     private final Camera camera;
 
+    private Vector3i selectedCord, lastCord;
+    public boolean click = false;
+
     public EngineRuntime(RTController rtController, Block[] initBlocks) {
         this.rtController = rtController;
         camera = rtController.camera;
+        selectedCord = null;
+        lastCord = null;
         setBlocks(initBlocks);
     }
 
     private void setBlocks(Block[] initBlocks){
-        blocks = new HashMap<>();
+        blocks = new ConcurrentHashMap<>();
         for (Block initBlock : initBlocks) {
             if (initBlock == null) throw new RuntimeException("initBlock was null");
             blocks.put(initBlock.cord, initBlock);
         }
     }
 
-    /**
-     * Сохранение данных EngineRuntime
-     */
     public void saveState(String fileName) {
         try {
             Thread.sleep(250);
@@ -59,9 +66,6 @@ public class EngineRuntime {
         }
     }
 
-    /**
-     * Загрузка данных EngineRuntime
-     */
     public void loadState(String fileName) {
         try {
             Thread.sleep(250);
@@ -70,7 +74,7 @@ public class EngineRuntime {
         }
 
         try {
-            HashMap<Vector3i, Block> newBlocks = new HashMap<>();
+            ConcurrentHashMap<Vector3i, Block> newBlocks = new ConcurrentHashMap<>();
             for (String line : Files.lines(new File(fileName).toPath()).toList()) {
                 final int[] cords = parseLine(line, Pattern.compile("cord=\\[.*?]"), 7, 2, Pattern.compile("\\s+"));
                 final int id = parseLine(line, Pattern.compile("id=.*?,"), 3, 1, Pattern.compile("\\s+"))[0];
@@ -89,9 +93,6 @@ public class EngineRuntime {
         }
     }
 
-    /**
-     * Преобразование данных из текстовой формы в int[]
-     */
     private static int[] parseLine(String line, Pattern pattern, int st, int delta, Pattern split) {
         Matcher matcher = pattern.matcher(line);
         if (!matcher.find()) throw new RuntimeException("Something wrong with state data");
@@ -105,9 +106,6 @@ public class EngineRuntime {
         return result;
     }
 
-    /**
-     * Генерация случайных блоков
-     */
     public static Block[] generateRndBlocks(int count, int cordBound) {
         Random random = new Random();
         HashMap<Vector3i, Block> genBlocks = new HashMap<>();
@@ -148,17 +146,22 @@ public class EngineRuntime {
 
     protected void rayTrace(){
         Vector3f orientation = rtController.camera.orientation;
-
         Vector3f pos = new Vector3f(camera.position);
         Vector3f dir = new Vector3f(orientation).div(Settings.rayPrecision);
 
+
         Vector3i lastCheckedPos = null;
+        lastCord = null;
+        selectedCord = null;
 
         for(int i = 0; i < Settings.rayDistance*Settings.rayPrecision; i++){
             pos.add(dir);
             Vector3i posI = new Vector3i((int)pos.x, (int)pos.y, (int)pos.z);
             if(checkCord(posI)){
-                blocks.get(posI).sideIds =  new int[]{8,8,8,8,8,8};
+                if(lastCheckedPos != null && !lastCheckedPos.equals(camera.position)) {
+                    lastCord = lastCheckedPos;
+                    selectedCord = posI;
+                }
                 break;
             }
             lastCheckedPos = posI;
@@ -166,10 +169,28 @@ public class EngineRuntime {
         //if(lastCheckedPos == null) throw new RuntimeException("rayTrace from existing block");
     }
 
+    private void moveCamera(){
+        /*final Set<Commands> commands = rtController.commands;
+        final Vector3f convertOrientation = new Vector3f(camera.orientation);
+        if(commands.contains(FORWARD)) camera.moveForward(convertOrientation);
+        if(commands.contains(BACKWARD)) camera.moveBackward(convertOrientation);
+        if(commands.contains(LEFT)) camera.moveLeft(convertOrientation);
+        if(commands.contains(RIGHT)) camera.moveRight(convertOrientation);*/
+    }
+
+    private void handleInput(){
+        if(!rtController.wasInputHandled){
+            moveCamera();
+            rtController.wasInputHandled = true;
+        }
+    }
+
     public void run() {
         System.out.println("engineRuntime started");
         while (rtController.isRunning()){
             //checkNearest();
+
+            //handleInput();
             rayTrace();
             try {
                 Thread.sleep(20L);

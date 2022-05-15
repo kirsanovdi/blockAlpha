@@ -5,12 +5,20 @@ import graphics.GraphicsDisplay;
 import graphics.Shader;
 import org.joml.Vector3f;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import static controller.Commands.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
 public class RTController {
     private EngineRuntime engineRuntime;
     private GraphicsDisplay graphicsDisplay;
+
+    //public Set<Commands> commands;
+    private boolean clickHandler;
+    public boolean wasInputHandled;
 
     public Camera camera;
 
@@ -19,7 +27,9 @@ public class RTController {
     public void run() {
         if(engineRuntime == null) throw new RuntimeException("engineRuntime was null");
         if(graphicsDisplay == null) throw new RuntimeException("graphicsDisplay was null");
-
+        //commands = null;
+        clickHandler = true;
+        wasInputHandled = true;
         Thread thread = new Thread(engineRuntime::run);
         thread.start();
         graphicsDisplay.run();
@@ -33,6 +43,7 @@ public class RTController {
     public void hookGraphicsDisplay(GraphicsDisplay graphicsDisplay){
         this.graphicsDisplay = graphicsDisplay;
     }
+
     public void hookEngineRuntime(EngineRuntime engineRuntime){
         this.engineRuntime = engineRuntime;
     }
@@ -44,6 +55,7 @@ public class RTController {
     public EngineRuntime getEngineRuntime() {
         return engineRuntime;
     }
+
     public GraphicsDisplay getGraphicsDisplay() {
         return graphicsDisplay;
     }
@@ -78,6 +90,7 @@ public class RTController {
     }
 
     public void changeSpeed(long window){
+        //System.out.println(camera.speed);
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
             camera.changeSpeed(1.0f);
         }
@@ -104,7 +117,6 @@ public class RTController {
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
             camera.moveRight(convertOrientation);
         }
-        camera.changeSpeed(window);
         camera.mouseInput(window);
     }
 

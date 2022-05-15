@@ -77,10 +77,6 @@ public class GraphicsDisplay {
         this.rtController = rtController;
     }
 
-    public long getWindow(){
-        return window;
-    }
-
     /**Запуск GUI*/
     public void run() {
         System.out.println("GraphicsDisplay has launched with LWJGL " + Version.getVersion());
@@ -196,6 +192,7 @@ public class GraphicsDisplay {
 
             glfwSwapBuffers(window);
             glfwPollEvents();
+            //System.out.println(rtController.camera.orientation);
             //printRenderTime();
         }
 

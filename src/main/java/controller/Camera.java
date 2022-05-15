@@ -1,6 +1,5 @@
 package controller;
 
-import controller.RTController;
 import graphics.GraphicsDisplay;
 import graphics.Shader;
 import org.joml.Matrix4f;
@@ -22,18 +21,18 @@ public class Camera {
     public float speed = 0.1f, sensitivity = 100.0f;
 
     private static final float pi = 3.14159265359f;
-    private boolean firstClick;
+    private boolean firstClick;//, wasReleased;
 
     protected Camera(int width, int height, Vector3f position, GraphicsDisplay graphicsDisplay, RTController rtController) {
         up = new Vector3f(0.0f, 1.0f, 0.0f);
-        firstClick = true;
+        firstClick = false;
+        //wasReleased = true;
         this.height = height;
         this.width = width;
         this.orientation = new Vector3f(0.0f, 0.0f, -1.0f);
         this.position = position;
         this.graphicsDisplay = graphicsDisplay;
         this.rtController = rtController;
-
         //personModel.backhookCamera(this);
     }
 
@@ -55,7 +54,9 @@ public class Camera {
     }
 
     public void moveForward(Vector3f movingOrientation){
+        System.out.println(speed);
         position.add(new Vector3f(movingOrientation).mul(speed));
+        System.out.println(speed);
     }
     public void moveBackward(Vector3f movingOrientation){
         position.add(new Vector3f(movingOrientation).mul(-speed));
@@ -72,6 +73,12 @@ public class Camera {
     }
 
     protected void mouseInput(long window) {
+        /*if (wasReleased && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS){
+            rtController.getEngineRuntime().click = true;
+            wasReleased = false;
+        }
+        if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) wasReleased = true;*/
+
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             if (firstClick) {
