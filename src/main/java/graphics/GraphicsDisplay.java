@@ -184,9 +184,6 @@ public class GraphicsDisplay {
 
             shader.activate();
 
-            //rtController.environmentInput(window);
-            //rtController.modelInput(window);
-            //rtController.changeSpeed(window);
             rtController.Input(window);
             camera.mouseInput(window);
             camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");

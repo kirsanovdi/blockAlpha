@@ -9,20 +9,14 @@ public class Main {
     public void test1(){
         RTController runtimeController = new RTController();
 
-        GraphicsDisplay graphicsDisplay = new GraphicsDisplay(runtimeController, 1080, 720, "Setup");
+        GraphicsDisplay graphicsDisplay = new GraphicsDisplay(runtimeController, 1920, 1080, "Setup");
         runtimeController.hookGraphicsDisplay(graphicsDisplay);
 
-        EngineRuntime runtime = new EngineRuntime(runtimeController, EngineRuntime.generateRndBlocks(1000, 150));
+        EngineRuntime runtime = new EngineRuntime(runtimeController, EngineRuntime.generateBlockLayer(25));
         runtimeController.hookEngineRuntime(runtime);
 
 
         runtimeController.run();
-    }
-
-    @Test
-    public void test2() {
-        //String line = "Block: cord=[\t47\t25\t47\t],\tid=0,\tsideIds=[0, 1, 0, 0, 0, 0]";
-        //EngineRuntime.loadState();
     }
 
 }

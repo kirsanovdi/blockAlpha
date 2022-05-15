@@ -19,8 +19,6 @@ public class RTController {
     private boolean clickHandler;
     public boolean wasInputHandled;
 
-    //public Camera camera;
-
     private boolean isRunning = true;
 
     public void run() {
@@ -30,6 +28,7 @@ public class RTController {
         commandsHashSet = new HashMap<>();
         commandsHashSet.put(REMOVE, true);
         commandsHashSet.put(ADD, true);
+        commandsHashSet.put(JUMP, true);
         clickHandler = true;
         wasInputHandled = true;
         Thread thread = new Thread(engineRuntime::run);
@@ -66,8 +65,6 @@ public class RTController {
         isRunning = false;
     }
 
-
-
     private void lockKey(Commands command){
         commandsHashSet.put(command, false);
     }
@@ -79,62 +76,6 @@ public class RTController {
     private boolean getKeyValue(Commands command){
         return commandsHashSet.get(command);
     }
-
-
-    /*public void environmentInput(long window){
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, true);
-            toClose();
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-            engineRuntime.saveState("state1");
-        }
-        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-            engineRuntime.loadState("state1");
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
-            engineRuntime.saveState("state2");
-        }
-        if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
-            engineRuntime.loadState("state2");
-        }
-    }
-
-    public void changeSpeed(long window){
-        //System.out.println(camera.speed);
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            commands.add(SPEED_1);
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
-            commands.add(SPEED_01);
-        }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            commands.add(SPEED_0025);
-        }
-    }
-
-    public void modelInput(long window){
-        //final Vector3f convertOrientation = new Vector3f(camera.orientation);
-        //convertOrientation.y = 0f;
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            commands.add(FORWARD);
-            //camera.moveForward(convertOrientation);
-        }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            commands.add(BACKWARD);
-            //camera.moveBackward(convertOrientation);
-        }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            commands.add(LEFT);
-            //camera.moveLeft(convertOrientation);
-        }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            commands.add(RIGHT);
-            //camera.moveRight(convertOrientation);
-        }
-    }*/
 
     public void Input(long window) {
         commandsSet = new LinkedHashSet<>();
@@ -158,6 +99,12 @@ public class RTController {
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) commandsSet.add(BACKWARD);
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) commandsSet.add(LEFT);
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) commandsSet.add(RIGHT);
+
+        if (getKeyValue(JUMP) && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            commandsSet.add(JUMP);
+            lockKey(JUMP);
+        }
+        if(!getKeyValue(JUMP) && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) unlockKey(JUMP);
 
         if (getKeyValue(REMOVE) && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
             commandsSet.add(REMOVE);

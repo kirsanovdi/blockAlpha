@@ -18,6 +18,8 @@ public class Camera {
     private static final float pi = 3.14159265359f;
     private boolean firstClick;
 
+    private boolean cursorHookHandler = true;
+
     public Camera(int width, int height, Vector3f position) {
         up = new Vector3f(0.0f, 1.0f, 0.0f);
         firstClick = false;
@@ -50,7 +52,12 @@ public class Camera {
     }
 
     public void mouseInput(long window) {
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
+            cursorHookHandler = true;
+        }
+
+        //if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
+        if(cursorHookHandler) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             if (firstClick) {
                 glfwSetCursorPos(window, width / 2.0f, height / 2.0f);
@@ -76,9 +83,10 @@ public class Camera {
 
             glfwSetCursorPos(window, width / 2.0f, height / 2.0f);
         }
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+        if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             firstClick = true;
+            cursorHookHandler = false;
         }
     }
 }

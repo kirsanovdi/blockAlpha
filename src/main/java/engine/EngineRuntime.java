@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +31,7 @@ public class EngineRuntime {
 
     public EngineRuntime(RTController rtController, Block[] initBlocks) {
         this.rtController = rtController;
-        model = new Model(new Vector3f(0.0f, 0.0f, 0.0f), 0.5f, rtController.getGraphicsDisplay().getCamera());
+        model = new Model(new Vector3f(0.0f, 10.0f, 0.0f), 0.5f, rtController.getGraphicsDisplay().getCamera());
         selectedCord = null;
         lastCord = null;
         setBlocks(initBlocks);
@@ -123,28 +124,40 @@ public class EngineRuntime {
         return genBlocks.values().toArray(new Block[0]);
     }
 
+    public static Block[] generateBlockLayer(int delta){
+        final Block[] result = new Block[delta*delta];
+        for(int z = 0; z < delta; z++){
+            for(int x = 0; x < delta; x++){
+                result[z*delta + x] = new Block(new Vector3i(x - delta/2, 5, z - delta/2), 0, new int[]{0,0,0,0,0,0});
+            }
+        }
+        return result;
+    }
+
     public boolean checkCord(Vector3i vector3i) {
         return blocks.containsKey(vector3i);
     }
 
-    protected void checkNearest() {
-        Vector3f pos = model.getPosition();
-        Vector3i modelInt = new Vector3i((int) pos.x - 2, (int) pos.y - 2, (int) pos.z - 2);
+    protected Set<Vector3i> checkNearest() {
+        final Set<Vector3i> vector3is = new LinkedHashSet<>();
+        final Vector3f pos = model.getPosition();
+        final Vector3i modelInt = new Vector3i((int) pos.x - 2, (int) pos.y - 2, (int) pos.z - 2);
         for (int dx = 0; dx < 5; dx++) {
             for (int dy = 0; dy < 5; dy++) {
                 for (int dz = 0; dz < 5; dz++) {
                     Vector3i checkedVector3i = new Vector3i(modelInt).add(dx, dy, dz);
                     if (checkCord(checkedVector3i)) {
-                        System.out.println(System.currentTimeMillis() + "\t" + checkedVector3i + " is near");
+                        vector3is.add(checkedVector3i);
                     }
                 }
             }
         }
+        return vector3is;
     }
 
     protected void rayTrace() {
         final Vector3f orientation = model.getOrientation();
-        final Vector3f pos = model.getPosition();
+        final Vector3f pos = model.getCameraPosition();
         final Vector3i startPosI = new Vector3i((int) pos.x, (int) pos.y, (int) pos.z);
         final Vector3f dir = new Vector3f(orientation).div(Settings.rayPrecision);
 
@@ -168,19 +181,59 @@ public class EngineRuntime {
         //if(lastCheckedPos == null) throw new RuntimeException("rayTrace from existing block");
     }
 
-    public void createBlock(Vector3i vector3i) {
+    private void createBlock(Vector3i vector3i) {
         blocks.put(vector3i, new Block(vector3i, 0, new int[]{1, 1, 1, 1, 1, 1}));
+        updateBlockSpace(vector3i);
+    }
+
+    private void removeBlock(Vector3i vector3i) {
+        blocks.remove(vector3i);
+        updateBlockSpace(vector3i);
+    }
+
+    private void pairUpdate(Block block, Vector3i anotherCord, int sideR, int sideAR) {
+        if (blocks.containsKey(anotherCord)) {
+            block.sideRender[sideR] = false;
+            blocks.get(anotherCord).sideRender[sideAR] = false;
+        } else {
+            block.sideRender[sideR] = true;
+        }
+    }
+
+    private void pairDeleteUpdate(Vector3i anotherCord, int sideAR) {
+        if (blocks.containsKey(anotherCord)) blocks.get(anotherCord).sideRender[sideAR] = true;
+    }
+
+
+    private void updateBlockSpace(Vector3i vector3i) {
+        final Vector3i center = vector3i;
+        if (blocks.containsKey(vector3i)) {
+            Block block = blocks.get(vector3i);
+            pairUpdate(block, new Vector3i(center).add(0, 0, 1), 0, 3);
+            pairUpdate(block, new Vector3i(center).add(0, 0, -1), 3, 0);
+            pairUpdate(block, new Vector3i(center).add(0, 1, 0), 1, 2);
+            pairUpdate(block, new Vector3i(center).add(0, -1, 0), 2, 1);
+            pairUpdate(block, new Vector3i(center).add(1, 0, 0), 5, 4);
+            pairUpdate(block, new Vector3i(center).add(-1, 0, 0), 4, 5);
+        } else {
+            pairDeleteUpdate(new Vector3i(center).add(0, 0, 1), 3);
+            pairDeleteUpdate(new Vector3i(center).add(0, 0, -1), 0);
+            pairDeleteUpdate(new Vector3i(center).add(0, 1, 0), 2);
+            pairDeleteUpdate(new Vector3i(center).add(0, -1, 0), 1);
+            pairDeleteUpdate(new Vector3i(center).add(1, 0, 0), 4);
+            pairDeleteUpdate(new Vector3i(center).add(-1, 0, 0), 5);
+        }
     }
 
     private void handleInput(Set<Commands> commandsSet) {
-        if (commandsSet.contains(REMOVE) && selectedCord != null) blocks.remove(selectedCord);
+        if (commandsSet.contains(REMOVE) && selectedCord != null) removeBlock(selectedCord);
         if (commandsSet.contains(ADD) && lastCord != null) createBlock(lastCord);
     }
 
     public void run() {
         System.out.println("engineRuntime started");
         while (rtController.isRunning()) {
-            model.handleInput(rtController.commandsSet);
+            model.handleInput(rtController.commandsSet, checkNearest());
             this.handleInput(rtController.commandsSet);
             rayTrace();
             try {
