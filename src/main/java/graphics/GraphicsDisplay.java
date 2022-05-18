@@ -64,6 +64,7 @@ public class GraphicsDisplay {
             uniform sampler2D tex0;
             void main()
             {
+                if(texture(tex0, texCoord).r + texture(tex0, texCoord).g + texture(tex0, texCoord).b > 2.9) discard;
                 FragColor = texture(tex0, texCoord);
             }
             """;

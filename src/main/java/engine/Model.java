@@ -17,6 +17,7 @@ public class Model {
     private float speed;
     private float downSpeed;
     private final Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+    private final float modelHeight = 1.5f;
 
     Model(Vector3f position, float speed, Camera camera) {
         this.position = new Vector3f(position);
@@ -25,14 +26,23 @@ public class Model {
         this.camera = camera;
     }
 
+    /**
+     * new Vector3f
+     */
     public Vector3f getPosition() {
         return new Vector3f(position);
     }
 
+    /**
+     * new Vector3f
+     */
     public Vector3f getCameraPosition() {
-        return new Vector3f(position).add(0f, 1.5f, 0f);
+        return new Vector3f(position).add(0f, modelHeight, 0f);
     }
 
+    /**
+     * new Vector3f
+     */
     public Vector3f getOrientation() {
         return new Vector3f(camera.orientation);
     }
@@ -40,6 +50,7 @@ public class Model {
     public void handleInput(Set<Commands> commandsSet, Set<Vector3i> nearestBlocks) {
         Vector3f orientation = new Vector3f(camera.orientation);
         orientation.y = 0f;
+        orientation.normalize();
 
         if (commandsSet.contains(FORWARD)) moveForward(orientation, nearestBlocks);
         if (commandsSet.contains(BACKWARD)) moveBackward(orientation, nearestBlocks);
@@ -48,40 +59,63 @@ public class Model {
         if (commandsSet.contains(JUMP)) downSpeed += 0.1f;
         fallDown(nearestBlocks);
 
-        if (commandsSet.contains(SPEED_1)) speed = 1.0f;
-        if (commandsSet.contains(SPEED_01)) speed = 0.1f;
-        if (commandsSet.contains(SPEED_0025)) speed = 0.025f;
-        camera.setPos(new Vector3f(position).add(0f, 1.5f, 0f));
+        final float df = 0.1f;
+        if (commandsSet.contains(SPEED_1)) speed = 1.0f * df ;
+        if (commandsSet.contains(SPEED_01)) speed = 0.1f * df ;
+        if (commandsSet.contains(SPEED_0025)) speed = 0.025f * df ;
+        camera.setPos(new Vector3f(position).add(0f, modelHeight, 0f));
+    }
+
+    protected boolean checkMove(Vector3f delta, Set<Vector3i> nearestBlocks) {
+        final Vector3i adjustableProbPosition = EngineRuntime.getVector3i(getPosition().add(delta));
+        final Vector3i cameraProbPos = EngineRuntime.getVector3i(getCameraPosition().add(delta));
+        while (adjustableProbPosition.y <= cameraProbPos.y) {
+            if(nearestBlocks.contains(adjustableProbPosition)) return false;
+            adjustableProbPosition.add(0, 1, 0);
+        }
+        return true;
     }
 
     private void moveForward(Vector3f movingOrientation, Set<Vector3i> nearestBlocks) {
-        final Vector3f probPosition = new Vector3f(position).add(new Vector3f(movingOrientation).mul(speed));
-        if (!nearestBlocks.contains(new Vector3i((int) probPosition.x, (int) probPosition.y, (int) probPosition.z)))
-            position.add(new Vector3f(movingOrientation).mul(speed));
+        final Vector3f delta = new Vector3f(movingOrientation).mul(speed);
+        final Vector3f dx = new Vector3f(delta).mul(0f, 0f, 16f), dz = new Vector3f(delta).mul(16f, 0f, 0f);
+        if (checkMove(dx, nearestBlocks))
+            position.add(dx.mul(0.05f));
+        if (checkMove(dz, nearestBlocks))
+            position.add(dz.mul(0.05f));
     }
 
     private void moveBackward(Vector3f movingOrientation, Set<Vector3i> nearestBlocks) {
-        final Vector3f probPosition = new Vector3f(position).add(new Vector3f(movingOrientation).mul(-speed));
-        if (!nearestBlocks.contains(new Vector3i((int) probPosition.x, (int) probPosition.y, (int) probPosition.z)))
-            position.add(new Vector3f(movingOrientation).mul(-speed));
+        final Vector3f delta = new Vector3f(movingOrientation).mul(-speed);
+        final Vector3f dx = new Vector3f(delta).mul(0f, 0f, 16f), dz = new Vector3f(delta).mul(16f, 0f, 0f);
+        if (checkMove(dx, nearestBlocks))
+            position.add(dx.mul(0.05f));
+        if (checkMove(dz, nearestBlocks))
+            position.add(dz.mul(0.05f));
     }
 
     private void moveRight(Vector3f movingOrientation, Set<Vector3i> nearestBlocks) {
-        final Vector3f probPosition = new Vector3f(position).add(new Vector3f(movingOrientation).cross(up).normalize().mul(speed));
-        if (!nearestBlocks.contains(new Vector3i((int) probPosition.x, (int) probPosition.y, (int) probPosition.z)))
-            position.add(new Vector3f(movingOrientation).cross(up).normalize().mul(speed));
+        final Vector3f delta = new Vector3f(movingOrientation).cross(up).normalize().mul(speed);
+        final Vector3f dx = new Vector3f(delta).mul(0f, 0f, 16f), dz = new Vector3f(delta).mul(16f, 0f, 0f);
+        if (checkMove(dx, nearestBlocks))
+            position.add(dx.mul(0.05f));
+        if (checkMove(dz, nearestBlocks))
+            position.add(dz.mul(0.05f));
     }
 
     private void moveLeft(Vector3f movingOrientation, Set<Vector3i> nearestBlocks) {
-        final Vector3f probPosition = new Vector3f(position).add(new Vector3f(movingOrientation).cross(up).normalize().mul(-speed));
-        if (!nearestBlocks.contains(new Vector3i((int) probPosition.x, (int) probPosition.y, (int) probPosition.z)))
-            position.add(new Vector3f(movingOrientation).cross(up).normalize().mul(-speed));
+        final Vector3f delta = new Vector3f(movingOrientation).cross(up).normalize().mul(-speed);
+        final Vector3f dx = new Vector3f(delta).mul(0f, 0f, 16f), dz = new Vector3f(delta).mul(16f, 0f, 0f);
+        if (checkMove(dx, nearestBlocks))
+            position.add(dx.mul(0.05f));
+        if (checkMove(dz, nearestBlocks))
+            position.add(dz.mul(0.05f));
     }
 
     private void fallDown(Set<Vector3i> nearestBlocks) {
-        final Vector3f probPosition = new Vector3f(position).add(0f, downSpeed, 0f);
-        if (!nearestBlocks.contains(new Vector3i((int) probPosition.x, (int) probPosition.y, (int) probPosition.z))) {
-            position.add(0f, downSpeed, 0f);
+        final Vector3f dy = new Vector3f(0f, downSpeed, 0f);
+        if (checkMove(dy, nearestBlocks)) {
+            position.add(dy);
             downSpeed -= g;
         } else downSpeed = 0f;
     }

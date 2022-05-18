@@ -19,4 +19,10 @@ public class Main {
         runtimeController.run();
     }
 
+    @Test
+    public void test2(){
+        float f = -1.5f;
+        System.out.println(f);
+    }
+
 }

@@ -29,6 +29,8 @@ public class RTController {
         commandsHashSet.put(REMOVE, true);
         commandsHashSet.put(ADD, true);
         commandsHashSet.put(JUMP, true);
+        commandsHashSet.put(START_DEBUG, true);
+        commandsHashSet.put(END_DEBUG, true);
         wasInputHandled = true;
         Thread thread = new Thread(engineRuntime::run);
         thread.start();
@@ -76,6 +78,15 @@ public class RTController {
         return commandsHashSet.get(command);
     }
 
+    private void keyHandler(long window, Commands command, int key){
+        if (getKeyValue(command) && glfwGetKey(window, key) == GLFW_PRESS) {
+            commandsSet.add(command);
+            lockKey(command);
+        }
+        if (!getKeyValue(command) && glfwGetKey(window, key) == GLFW_RELEASE) unlockKey(command);
+    }
+
+
     public void Input(long window) {
         commandsSet = new LinkedHashSet<>();
 
@@ -99,22 +110,10 @@ public class RTController {
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) commandsSet.add(LEFT);
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) commandsSet.add(RIGHT);
 
-        if (getKeyValue(JUMP) && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            commandsSet.add(JUMP);
-            lockKey(JUMP);
-        }
-        if (!getKeyValue(JUMP) && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) unlockKey(JUMP);
-
-        if (getKeyValue(REMOVE) && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-            commandsSet.add(REMOVE);
-            lockKey(REMOVE);
-        }
-        if (!getKeyValue(REMOVE) && glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) unlockKey(REMOVE);
-
-        if (getKeyValue(ADD) && glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
-            commandsSet.add(ADD);
-            lockKey(ADD);
-        }
-        if (!getKeyValue(ADD) && glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) unlockKey(ADD);
+        keyHandler(window, JUMP, GLFW_KEY_SPACE);
+        keyHandler(window, REMOVE, GLFW_KEY_R);
+        keyHandler(window, ADD, GLFW_KEY_T);
+        keyHandler(window, START_DEBUG, GLFW_KEY_1);
+        keyHandler(window, END_DEBUG, GLFW_KEY_2);
     }
 }

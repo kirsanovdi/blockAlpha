@@ -79,7 +79,7 @@ public class Camera {
                 orientation.y = newOrientation.y;
                 orientation.z = newOrientation.z;
             }
-
+            orientation.normalize();
             glfwSetCursorPos(window, width / 2.0f, height / 2.0f);
         }
         if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) {

@@ -26,12 +26,14 @@ public class EngineRuntime {
     private final RTController rtController;
 
     private final Model model;
+    private final Settings settings;
 
     private Vector3i selectedCord, lastCord;
 
     public EngineRuntime(RTController rtController, Block[] initBlocks) {
         this.rtController = rtController;
         model = new Model(new Vector3f(0.0f, 10.0f, 0.0f), 0.5f, rtController.getGraphicsDisplay().getCamera());
+        settings = new Settings();
         selectedCord = null;
         lastCord = null;
         setBlocks(initBlocks);
@@ -42,6 +44,13 @@ public class EngineRuntime {
         for (Block initBlock : initBlocks) {
             if (initBlock == null) throw new RuntimeException("initBlock was null");
             blocks.put(initBlock.cord, initBlock);
+            updateBlockSpace(initBlock.cord);
+        }
+    }
+
+    private void removeId(int id){
+        for(Block block: blocks.values()){
+            if(block.id == id && block.cord != lastCord) blocks.remove(block.cord);
         }
     }
 
@@ -135,13 +144,13 @@ public class EngineRuntime {
     }
 
     public boolean checkCord(Vector3i vector3i) {
-        return blocks.containsKey(vector3i);
+        return blocks.containsKey(vector3i) && blocks.get(vector3i).id != -1;
     }
 
     protected Set<Vector3i> checkNearest() {
         final Set<Vector3i> vector3is = new LinkedHashSet<>();
         final Vector3f pos = model.getPosition();
-        final Vector3i modelInt = new Vector3i((int) pos.x - 2, (int) pos.y - 2, (int) pos.z - 2);
+        final Vector3i modelInt = getVector3i(pos).add(-2,-2,-2);
         for (int dx = 0; dx < 5; dx++) {
             for (int dy = 0; dy < 5; dy++) {
                 for (int dz = 0; dz < 5; dz++) {
@@ -155,10 +164,14 @@ public class EngineRuntime {
         return vector3is;
     }
 
+    protected static Vector3i getVector3i(Vector3f v3f){
+        return new Vector3i((int) v3f.x + (v3f.x < 0? -1: 0), (int) v3f.y + (v3f.y < 0? -1: 0), (int) v3f.z + (v3f.z < 0? -1: 0));
+    }
+
     protected void rayTrace() {
         final Vector3f orientation = model.getOrientation();
         final Vector3f pos = model.getCameraPosition();
-        final Vector3i startPosI = new Vector3i((int) pos.x, (int) pos.y, (int) pos.z);
+        final Vector3i startPosI = getVector3i(pos);
         final Vector3f dir = new Vector3f(orientation).div(Settings.rayPrecision);
 
 
@@ -168,7 +181,7 @@ public class EngineRuntime {
 
         for (int i = 0; i < Settings.rayDistance * Settings.rayPrecision; i++) {
             pos.add(dir);
-            Vector3i posI = new Vector3i((int) pos.x, (int) pos.y, (int) pos.z);
+            Vector3i posI = getVector3i(pos);
             if (checkCord(posI)) {
                 if (lastCheckedPos != null && !lastCheckedPos.equals(startPosI)) {
                     lastCord = lastCheckedPos;
@@ -181,9 +194,15 @@ public class EngineRuntime {
         //if(lastCheckedPos == null) throw new RuntimeException("rayTrace from existing block");
     }
 
-    private void createBlock(Vector3i vector3i) {
-        blocks.put(vector3i, new Block(vector3i, 0, new int[]{1, 1, 1, 1, 1, 1}));
+    private void createBlock(Vector3i vector3i, int id, int sideId) {
+        Vector3i v3i = new Vector3i(vector3i);
+        blocks.put(v3i, new Block(v3i, id, new int[]{sideId, sideId, sideId, sideId, sideId, sideId}));
         updateBlockSpace(vector3i);
+    }
+
+    private void createDebugBlock (Vector3i vector3i, int id, int sideId) {
+        Vector3i v3i = new Vector3i(vector3i);
+        blocks.put(v3i, new Block(v3i, id, new int[]{sideId, sideId, sideId, sideId, sideId, sideId}));
     }
 
     private void removeBlock(Vector3i vector3i) {
@@ -192,7 +211,7 @@ public class EngineRuntime {
     }
 
     private void pairUpdate(Block block, Vector3i anotherCord, int sideR, int sideAR) {
-        if (blocks.containsKey(anotherCord)) {
+        if (checkCord(anotherCord)) {
             block.sideRender[sideR] = false;
             blocks.get(anotherCord).sideRender[sideAR] = false;
         } else {
@@ -201,7 +220,7 @@ public class EngineRuntime {
     }
 
     private void pairDeleteUpdate(Vector3i anotherCord, int sideAR) {
-        if (blocks.containsKey(anotherCord)) blocks.get(anotherCord).sideRender[sideAR] = true;
+        if (checkCord(anotherCord)) blocks.get(anotherCord).sideRender[sideAR] = true;
     }
 
 
@@ -227,15 +246,44 @@ public class EngineRuntime {
 
     private void handleInput(Set<Commands> commandsSet) {
         if (commandsSet.contains(REMOVE) && selectedCord != null) removeBlock(selectedCord);
-        if (commandsSet.contains(ADD) && lastCord != null) createBlock(lastCord);
+        Set<Vector3i> set = new LinkedHashSet<>();
+        set.add(lastCord);
+        if (commandsSet.contains(ADD) && lastCord != null && model.checkMove(new Vector3f(0f,0f,0f), set)) createBlock(lastCord, 1, 1);
+        if (commandsSet.contains(START_DEBUG)) settings.debug = true;
+        if (commandsSet.contains(END_DEBUG)) settings.debug = false;
+    }
+
+    private void debug(){
+        //if (lastCord != null) createDebugBlock(lastCord, -1, 6);
+
+        final Vector3f orientation = model.getOrientation();
+        final Vector3f pos = model.getCameraPosition();
+        final Vector3f dir = new Vector3f(orientation).div(Settings.rayPrecision);
+
+        Vector3i lastPos = null;
+        for (int i = 0; i < Settings.rayDistance * Settings.rayPrecision; i++) {
+            pos.add(dir);
+            Vector3i posI = getVector3i(pos);
+            if (checkCord(posI)) {
+                if(lastPos != null) createDebugBlock(lastPos, -1, 6);
+                break;
+            }
+            if(lastPos != null) createDebugBlock(lastPos, -1, 9);
+            lastPos = posI;
+        }
     }
 
     public void run() {
         System.out.println("engineRuntime started");
         while (rtController.isRunning()) {
+            removeId(-1);
+            rayTrace();
+
+            if(settings.debug) debug();
+
             model.handleInput(rtController.commandsSet, checkNearest());
             this.handleInput(rtController.commandsSet);
-            rayTrace();
+
             try {
                 Thread.sleep(5L);
             } catch (InterruptedException e) {

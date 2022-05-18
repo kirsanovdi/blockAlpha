@@ -11,4 +11,11 @@ public class Settings {
 
     public static final float rayPrecision = 100f;
     public static final int rayDistance = 100;
+
+    public static final float fovDeg = 100.0f;
+
+    public boolean debug;
+    public Settings(){
+        debug = false;
+    }
 }
