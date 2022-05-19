@@ -56,11 +56,14 @@ public class Model {
         if (commandsSet.contains(BACKWARD)) moveBackward(orientation, nearestBlocks);
         if (commandsSet.contains(LEFT)) moveLeft(orientation, nearestBlocks);
         if (commandsSet.contains(RIGHT)) moveRight(orientation, nearestBlocks);
-        if (commandsSet.contains(JUMP)) downSpeed += 0.1f;
+        if (commandsSet.contains(JUMP)) {
+            //System.out.println(downSpeed);
+            downSpeed += 0.1f;
+        }
         fallDown(nearestBlocks);
 
         final float df = 0.1f;
-        if (commandsSet.contains(SPEED_1)) speed = 1.0f * df ;
+        if (commandsSet.contains(SPEED_1)) speed = df ;
         if (commandsSet.contains(SPEED_01)) speed = 0.1f * df ;
         if (commandsSet.contains(SPEED_0025)) speed = 0.025f * df ;
         camera.setPos(new Vector3f(position).add(0f, modelHeight, 0f));
@@ -113,10 +116,19 @@ public class Model {
     }
 
     private void fallDown(Set<Vector3i> nearestBlocks) {
+        //float f1 = System.nanoTime();
         final Vector3f dy = new Vector3f(0f, downSpeed, 0f);
-        if (checkMove(dy, nearestBlocks)) {
-            position.add(dy);
-            downSpeed -= g;
-        } else downSpeed = 0f;
+        final Vector3f checkV3f = new Vector3f(dy.mul(0f, 16f/10f, 0f));
+        final Vector3f mulV3f = new Vector3f(dy.mul(0.05f));
+        for(int i = 0; i < 10; i++){
+            if (checkMove(checkV3f, nearestBlocks)) {
+                position.add(mulV3f);
+                downSpeed -= g/10f;
+            } else {
+                downSpeed = 0f;
+                break;
+            }
+        }
+        //System.out.println((System.nanoTime() - f1)/1000;
     }
 }
