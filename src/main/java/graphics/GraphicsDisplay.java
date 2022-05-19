@@ -3,14 +3,19 @@ package graphics;
 import controller.RTController;
 import controller.Settings;
 import graphics.translateObjects.Translation;
+import org.joml.Random;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.IntBuffer;
+import java.nio.file.Files;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -42,32 +47,9 @@ public class GraphicsDisplay {
         }
     }
 
-    String vertexShaderSource = """
-            #version 330 core
-            layout (location = 0) in vec3 aPos;
-            layout (location = 1) in vec2 aTex;
-            out vec2 texCoord;
-                        
-            uniform mat4 camMatrix;
-                        
-            void main()
-            {
-                gl_Position = camMatrix * vec4(aPos, 1.0f);
-                texCoord = aTex;
-            }
-            """;
+    String vertexShaderSource;
 
-    String fragmentShaderSource = """
-            #version 330 core
-            out vec4 FragColor;
-            in vec2 texCoord;
-            uniform sampler2D tex0;
-            void main()
-            {
-                if(texture(tex0, texCoord).r + texture(tex0, texCoord).g + texture(tex0, texCoord).b > 2.9) discard;
-                FragColor = texture(tex0, texCoord);
-            }
-            """;
+    String fragmentShaderSource;
 
     /**Основной коструктор*/
     public GraphicsDisplay(RTController rtController, int width, int height, String name) {
@@ -76,6 +58,13 @@ public class GraphicsDisplay {
         this.name = name;
         this.camera = new Camera(width, height, new Vector3f(0.0f, 0.0f, 2.0f));
         this.rtController = rtController;
+
+        try {
+            vertexShaderSource = Files.readString(new File("src/main/java/graphics/translateObjects/vertexShader").toPath());
+            fragmentShaderSource = Files.readString(new File("src/main/java/graphics/translateObjects/fragmentShader").toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**Запуск GUI*/
@@ -171,9 +160,7 @@ public class GraphicsDisplay {
 
         Translation translation = new Translation(dataTransformation);
 
-        //dataTransformation.update();
-        //translation.update();
-
+        float f1 = 1f;
         while (!glfwWindowShouldClose(window)) {
 
             dataTransformation.update();
@@ -189,6 +176,10 @@ public class GraphicsDisplay {
             camera.mouseInput(window);
             camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");
 
+            int projLoc = glGetUniformLocation(shader.getId(), "lightPos");
+
+            glUniform3fv(projLoc, new float[]{camera.position.x, camera.position.y, camera.position.z});
+            f1 *= 0.999f;
             texture.bind();
             translation.setupVAO();
 
@@ -196,7 +187,6 @@ public class GraphicsDisplay {
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-            //System.out.println(rtController.camera.orientation);
             //printRenderTime();
         }
 

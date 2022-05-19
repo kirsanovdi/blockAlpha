@@ -59,11 +59,16 @@ public class DataTransformation {
         final float yId = (float) id % 16L;
         final float xId = (float) id / 16L;
         final float delta = 1.0f / 16.0f;
+
+        final float kX = (b.y - a.y) * (c.z - a.z) - (c.y - a.y) * ( b.z - a.z);
+        final float kY = (c.x - a.x) * (b.z - a.z) - (b.x - a.x) * ( c.z - a.z);
+        final float kZ = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * ( b.y - a.y);
+
         final float[] tempCordsRaw = new float[]{
-                a.x, a.y, a.z, xId,         yId,
-                b.x, b.y, b.z, xId,         yId + delta,
-                c.x, c.y, c.z, xId + delta, yId + delta,
-                d.x, d.y, d.z, xId + delta, yId
+                a.x, a.y, a.z, xId,         yId        , kX, kY, kZ,
+                b.x, b.y, b.z, xId,         yId + delta, kX, kY, kZ,
+                c.x, c.y, c.z, xId + delta, yId + delta, kX, kY, kZ,
+                d.x, d.y, d.z, xId + delta, yId        , kX, kY, kZ
         };
         final int[] tempIndicesRaw = new int[]{
                 verticesCount, verticesCount + 2, verticesCount + 1,

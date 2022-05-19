@@ -16,8 +16,9 @@ public class Translation {
         vertexBufferObject.bindRefresh();
         elementBufferObject.bindRefresh();
 
-        vertexArrayObject.LinkAttrib(vertexBufferObject, 0, 20, 0);
-        vertexArrayObject.LinkAttrib(vertexBufferObject, 1, 20, 12);
+        vertexArrayObject.LinkAttrib(vertexBufferObject, 0, 32, 0);
+        vertexArrayObject.LinkAttrib(vertexBufferObject, 1, 32, 12);
+        vertexArrayObject.LinkAttrib(vertexBufferObject, 2, 32, 20);
 
         vertexArrayObject.unbind();
         vertexBufferObject.unbind();
@@ -29,8 +30,9 @@ public class Translation {
         vertexBufferObject.bindRefresh();
         elementBufferObject.bindRefresh();
 
-        vertexArrayObject.LinkAttrib(vertexBufferObject, 0, 20, 0);
-        vertexArrayObject.LinkAttrib(vertexBufferObject, 1, 20, 12);
+        vertexArrayObject.LinkAttrib(vertexBufferObject, 0, 32, 0);
+        vertexArrayObject.LinkAttrib(vertexBufferObject, 1, 32, 12);
+        vertexArrayObject.LinkAttrib(vertexBufferObject, 2, 32, 20);
 
         vertexArrayObject.unbind();
         vertexBufferObject.unbind();
