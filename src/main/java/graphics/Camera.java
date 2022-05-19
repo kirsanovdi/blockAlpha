@@ -5,8 +5,8 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL33.glGetUniformLocation;
-import static org.lwjgl.opengl.GL33.glUniformMatrix4fv;
+import static org.lwjgl.opengl.GL46.glGetUniformLocation;
+import static org.lwjgl.opengl.GL46.glUniformMatrix4fv;
 
 public class Camera {
     private final Vector3f up;

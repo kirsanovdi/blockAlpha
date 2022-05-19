@@ -5,12 +5,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.opengl.GL33.*;
-import static org.lwjgl.opengl.GL33.glDeleteTextures;
-import static org.lwjgl.opengl.GL33.glActiveTexture;
-import static org.lwjgl.opengl.GL33.glGetUniformLocation;
-import static org.lwjgl.opengl.GL33.glUniform1i;
-import static org.lwjgl.opengl.GL33.glGenerateMipmap;
+import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46.glDeleteTextures;
+import static org.lwjgl.opengl.GL46.glActiveTexture;
+import static org.lwjgl.opengl.GL46.glGetUniformLocation;
+import static org.lwjgl.opengl.GL46.glUniform1i;
+import static org.lwjgl.opengl.GL46.glGenerateMipmap;
 
 public class Texture {
     private final int texture;

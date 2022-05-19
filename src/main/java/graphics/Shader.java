@@ -1,7 +1,7 @@
 package graphics;
 
-import static org.lwjgl.opengl.GL33.*;
-import static org.lwjgl.opengl.GL33.glDeleteProgram;
+import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46.glDeleteProgram;
 
 public class Shader {
     private int id;
