@@ -1,9 +1,9 @@
 package graphics.translateObjects;
 
-import static org.lwjgl.opengl.GL33.GL_FLOAT;
-import static org.lwjgl.opengl.GL33.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL33.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL33.*;
+import static org.lwjgl.opengl.GL46.GL_FLOAT;
+import static org.lwjgl.opengl.GL46.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL46.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL46.*;
 
 /**Vertex Array Object, массив вершин*/
 public class VAO {

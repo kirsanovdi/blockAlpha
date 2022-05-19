@@ -2,7 +2,7 @@ package graphics.translateObjects;
 
 import graphics.DataTransformation;
 
-import static org.lwjgl.opengl.GL33.*;
+import static org.lwjgl.opengl.GL46.*;
 
 /**Vertex Buffer Object, буфер вершин*/
 public class VBO {
