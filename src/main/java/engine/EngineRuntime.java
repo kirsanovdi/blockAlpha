@@ -137,7 +137,8 @@ public class EngineRuntime {
         final Block[] result = new Block[delta * delta];
         for (int z = 0; z < delta; z++) {
             for (int x = 0; x < delta; x++) {
-                result[z * delta + x] = new Block(new Vector3i(x - delta / 2, 5, z - delta / 2), 0, new int[]{0, 0, 0, 0, 0, 0});
+                final int sideId = 17;
+                result[z * delta + x] = new Block(new Vector3i(x - delta / 2, 5, z - delta / 2), 0, new int[]{sideId, sideId, sideId, sideId, sideId, sideId});
             }
         }
         return result;
@@ -248,7 +249,7 @@ public class EngineRuntime {
         if (commandsSet.contains(REMOVE) && selectedCord != null) removeBlock(selectedCord);
         Set<Vector3i> set = new LinkedHashSet<>();
         set.add(lastCord);
-        if (commandsSet.contains(ADD) && lastCord != null && model.checkMove(new Vector3f(0f,0f,0f), set)) createBlock(lastCord, 1, 1);
+        if (commandsSet.contains(ADD) && lastCord != null && model.checkMove(new Vector3f(0f,0f,0f), set)) createBlock(lastCord, 1, 17);
         if (commandsSet.contains(START_DEBUG)) settings.debug = true;
         if (commandsSet.contains(END_DEBUG)) settings.debug = false;
     }

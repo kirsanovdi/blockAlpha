@@ -176,9 +176,12 @@ public class GraphicsDisplay {
             camera.mouseInput(window);
             camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");
 
-            int projLoc = glGetUniformLocation(shader.getId(), "lightPos");
+            int lightPos = glGetUniformLocation(shader.getId(), "lightPos");
+            glUniform3fv(lightPos, new float[]{camera.position.x, camera.position.y, camera.position.z});
 
-            glUniform3fv(projLoc, new float[]{camera.position.x, camera.position.y, camera.position.z});
+            int camPos = glGetUniformLocation(shader.getId(), "camPos");
+            glUniform3fv(camPos, new float[]{camera.position.x, camera.position.y, camera.position.z});
+
             f1 *= 0.999f;
             texture.bind();
             translation.setupVAO();

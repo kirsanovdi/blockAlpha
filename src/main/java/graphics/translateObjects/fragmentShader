@@ -9,13 +9,18 @@
     uniform sampler2D tex0;
 
     uniform vec3 lightPos;
+    uniform vec3 camPos;
 
     void main()
     {
          vec3 normal = normalize(Normal);
-         vec3 lightDirection = normalize(lightPos - crntPos);
+         vec3 lightDirection = normalize(vec3(0.0f, 10.0f, 0.0f) - crntPos);
 
          float diffuse = max(dot(-normal, lightDirection), 0.0f);
 
-         FragColor = texture(tex0, texCoord) * diffuse;
+         vec3 viewDirection = normalize(camPos - crntPos);
+         vec3 reflectionDirection = reflect(-lightDirection, normal);
+         float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
+
+         FragColor = texture(tex0, texCoord) * (diffuse + 0.2f + specAmount * 0.5f);
     }

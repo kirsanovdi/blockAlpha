@@ -56,8 +56,8 @@ public class DataTransformation {
     }
 
     public void transferSquare(Vector3f a, Vector3f b, Vector3f c, Vector3f d, long id) {
-        final float yId = (float) id % 16L;
-        final float xId = (float) id / 16L;
+        final float yId = (float) (id / 16L) / 16.0f;
+        final float xId = (float) (id % 16L) / 16.0f;
         final float delta = 1.0f / 16.0f;
 
         final float kX = (b.y - a.y) * (c.z - a.z) - (c.y - a.y) * ( b.z - a.z);
