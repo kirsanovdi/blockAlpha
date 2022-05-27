@@ -186,7 +186,7 @@ public class GraphicsDisplay {
             glUniform4fv(lightColor, new float[]{1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f});
 
             int lightPos = glGetUniformLocation(shader.getId(), "lightPos");
-            glUniform3fv(lightPos, new float[]{0.0f, 10.0f, -10.0f, 0.0f, 10.0f, 10.0f});
+            glUniform3fv(lightPos, new float[]{0.0f, 7.0f, -10.0f, 0.0f, 7.0f, 10.0f});
             //vec3(0.0f, 10.0f, 0.0f)
             int camPos = glGetUniformLocation(shader.getId(), "camPos");
             glUniform3fv(camPos, new float[]{camera.position.x, camera.position.y, camera.position.z});

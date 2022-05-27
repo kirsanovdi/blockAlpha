@@ -23,7 +23,7 @@
          vec3 normal = normalize(Normal);
          vec3 viewDirection = normalize(camPos - crntPos);
 
-         vec4 diffuse = vec4(0.0f, 0.0f, 0.0f, 0.0f), specular = vec4(0.1f, 0.1f, 0.1f, 0.0f);
+         vec4 diffuse = vec4(0.0f, 0.0f, 0.0f, 0.0f), specular = vec4(0.0f, 0.0f, 0.0f, 0.0f);
          for(int i = 0; i < lightSize; i++){
              vec3 lightVec = lightPos[i] - crntPos;
              vec3 lightDirection = normalize(lightVec);
@@ -33,8 +33,9 @@
              float dist = length(lightVec);
              float intensity = pow(getIntensity(dist), 2);
 
+             specular += lightColor[i] * pow(specAmount * 0.5f, 2) * intensity;
              diffuse += lightColor[i] * pow(max(dot(-normal, lightDirection), 0.0f), 2) * intensity;
          }
 
-         FragColor = texture(tex0, texCoord) * diffuse;// + texture(tex1, texCoord) * specular * intensity;
+         FragColor = texture(tex0, texCoord) * diffuse + texture(tex1, texCoord) * specular;
     }

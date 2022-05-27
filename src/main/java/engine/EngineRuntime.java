@@ -10,10 +10,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,25 +19,29 @@ import static controller.Commands.*;
 
 public class EngineRuntime {
 
-    public ConcurrentHashMap<Vector3i, Block> blocks;
+    public final ConcurrentHashMap<Vector3i, Block> blocks;
+    public final Set<Line> lines;
     private final RTController rtController;
 
     private final Model model;
     private final Settings settings;
 
     private Vector3i selectedCord, lastCord;
+    private Vector3f selectedFloatCord;
 
     public EngineRuntime(RTController rtController, Block[] initBlocks) {
         this.rtController = rtController;
         model = new Model(new Vector3f(0.0f, 10.0f, 0.0f), 0.5f, rtController.getGraphicsDisplay().getCamera());
         settings = new Settings();
         selectedCord = null;
+        selectedFloatCord = null;
         lastCord = null;
+        blocks = new ConcurrentHashMap<>();
         setBlocks(initBlocks);
+        lines = new HashSet<>();
     }
 
     private void setBlocks(Block[] initBlocks) {
-        blocks = new ConcurrentHashMap<>();
         for (Block initBlock : initBlocks) {
             if (initBlock == null) throw new RuntimeException("initBlock was null");
             blocks.put(initBlock.cord, initBlock);
@@ -82,7 +83,6 @@ public class EngineRuntime {
         }
 
         try {
-            //ConcurrentHashMap<Vector3i, Block> newBlocks = new ConcurrentHashMap<>();
             blocks.clear();
             for (String line : Files.lines(new File(fileName).toPath()).toList()) {
                 final int[] cords = parseLine(line, Pattern.compile("cord=\\[.*?]"), 7, 2, Pattern.compile("\\s+"));
@@ -93,9 +93,7 @@ public class EngineRuntime {
 
                 Vector3i vector3i = new Vector3i(cords[0], cords[1], cords[2]);
                 createBlock(vector3i, id, sideIds);
-                //newBlocks.put(vector3i, new Block(vector3i, id, sideIds));
             }
-            //blocks = newBlocks;
             System.out.println("state " + fileName + " loaded");
         } catch (IOException ex) {
             System.out.println("Cannot load state");
@@ -116,25 +114,6 @@ public class EngineRuntime {
         return result;
     }
 
-    public static Block[] generateRndBlocks(int count, int cordBound) {
-        Random random = new Random();
-        HashMap<Vector3i, Block> genBlocks = new HashMap<>();
-        for (int i = 0; i < count; i++) {
-            Block block = new Block(
-                    new Vector3i(random.nextInt(cordBound), random.nextInt(cordBound), random.nextInt(cordBound)),
-                    0,
-                    new int[]{random.nextInt(6),
-                            random.nextInt(6),
-                            random.nextInt(6),
-                            random.nextInt(6),
-                            random.nextInt(6),
-                            random.nextInt(6)}
-            );
-            genBlocks.put(block.cord, block);
-        }
-        return genBlocks.values().toArray(new Block[0]);
-    }
-
     public static Block[] generateBlockLayer(int delta) {
         final Block[] result = new Block[delta * delta];
         for (int z = 0; z < delta; z++) {
@@ -150,7 +129,7 @@ public class EngineRuntime {
         return blocks.containsKey(vector3i) && blocks.get(vector3i).id != -1;
     }
 
-    protected Set<Vector3i> checkNearest() {
+    protected Set<Vector3i> getNearest() {
         final Set<Vector3i> vector3is = new LinkedHashSet<>();
         final Vector3f pos = model.getPosition();
         final Vector3i modelInt = getVector3i(pos).add(-2,-2,-2);
@@ -181,6 +160,7 @@ public class EngineRuntime {
         Vector3i lastCheckedPos = null;
         lastCord = null;
         selectedCord = null;
+        selectedFloatCord = null;
 
         for (int i = 0; i < Settings.rayDistance * Settings.rayPrecision; i++) {
             pos.add(dir);
@@ -189,12 +169,12 @@ public class EngineRuntime {
                 if (lastCheckedPos != null && !lastCheckedPos.equals(startPosI)) {
                     lastCord = lastCheckedPos;
                     selectedCord = posI;
+                    selectedFloatCord = pos;
                 }
                 break;
             }
             lastCheckedPos = posI;
         }
-        //if(lastCheckedPos == null) throw new RuntimeException("rayTrace from existing block");
     }
 
     private void createBlock(Vector3i vector3i, int id, int sideId) {
@@ -205,11 +185,6 @@ public class EngineRuntime {
         Vector3i v3i = new Vector3i(vector3i);
         blocks.put(v3i, new Block(v3i, id, sideIds));
         updateBlockSpace(vector3i);
-    }
-
-    private void createDebugBlock (Vector3i vector3i, int id, int sideId) {
-        Vector3i v3i = new Vector3i(vector3i);
-        blocks.put(v3i, new Block(v3i, id, new int[]{sideId, sideId, sideId, sideId, sideId, sideId}));
     }
 
     private void removeBlock(Vector3i vector3i) {
@@ -229,7 +204,6 @@ public class EngineRuntime {
     private void pairDeleteUpdate(Vector3i anotherCord, int sideAR) {
         if (checkCord(anotherCord)) blocks.get(anotherCord).sideRender[sideAR] = true;
     }
-
 
     private void updateBlockSpace(Vector3i vector3i) {
         final Vector3i center = vector3i;
@@ -253,31 +227,14 @@ public class EngineRuntime {
 
     private void handleInput(Set<Commands> commandsSet) {
         if (commandsSet.contains(REMOVE) && selectedCord != null) removeBlock(selectedCord);
-        Set<Vector3i> set = new LinkedHashSet<>();
-        set.add(lastCord);
-        if (commandsSet.contains(ADD) && lastCord != null && model.checkMove(new Vector3f(0f,0f,0f), set)) createBlock(lastCord, 1, 19);
-        if (commandsSet.contains(START_DEBUG)) settings.debug = true;
-        if (commandsSet.contains(END_DEBUG)) settings.debug = false;
-    }
-
-    private void debug(){
-        //if (lastCord != null) createDebugBlock(lastCord, -1, 6);
-
-        final Vector3f orientation = model.getOrientation();
-        final Vector3f pos = model.getCameraPosition();
-        final Vector3f dir = new Vector3f(orientation).div(Settings.rayPrecision);
-
-        Vector3i lastPos = null;
-        for (int i = 0; i < Settings.rayDistance * Settings.rayPrecision; i++) {
-            pos.add(dir);
-            Vector3i posI = getVector3i(pos);
-            if (checkCord(posI)) {
-                if(lastPos != null) createDebugBlock(lastPos, -1, 6);
-                break;
+        if (commandsSet.contains(ADD) && lastCord != null && model.checkPosToPlace(lastCord)) createBlock(lastCord, 1, 17);
+        if (commandsSet.contains(START_DEBUG) && selectedCord != null){
+            synchronized (lines) {
+                lines.clear();
+                lines.add(new Line(model.getCameraPosition(), new Vector3f(selectedCord)));//settings.debug = true;
             }
-            if(lastPos != null) createDebugBlock(lastPos, -1, 9);
-            lastPos = posI;
         }
+        if (commandsSet.contains(END_DEBUG)) settings.debug = false;
     }
 
     public void run() {
@@ -286,10 +243,13 @@ public class EngineRuntime {
             removeId(-1);
             rayTrace();
 
-            if(settings.debug) debug();
-
-            model.handleInput(rtController.commandsSet, checkNearest());
+            model.handleInput(rtController.commandsSet, getNearest());
             this.handleInput(rtController.commandsSet);
+
+            synchronized (lines) {
+                lines.clear();
+                if( selectedFloatCord != null) lines.add(new Line(model.getCameraPosition().add(model.getOrientation().normalize().cross(new Vector3f(0.0f, 1.0f, 0.0f)).mul(0.2f)), new Vector3f(selectedFloatCord)));//settings.debug = true;
+            }
 
             try {
                 Thread.sleep(5L);

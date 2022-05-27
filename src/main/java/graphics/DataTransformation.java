@@ -4,6 +4,7 @@ import controller.RTController;
 import controller.Settings;
 import engine.Block;
 import engine.EngineRuntime;
+import engine.Line;
 import org.joml.Vector3f;
 
 public class DataTransformation {
@@ -23,6 +24,11 @@ public class DataTransformation {
         reset();
         for (Block block : engineRuntime.blocks.values()) {
             transferBlock(block);
+        }
+        synchronized (engineRuntime.lines) {
+            for (Line line : engineRuntime.lines) {
+                transferLine(line);
+            }
         }
     }
 
@@ -76,6 +82,16 @@ public class DataTransformation {
         };
         verticesCount += 4;
         transfer(tempCordsRaw, tempIndicesRaw);
+    }
+
+    private void transferLine(Line line){
+        final float delta = 0.01f;
+        Vector3f startUp = new Vector3f(line.start).add(0.0f, delta, 0.0f);
+        Vector3f startDown = new Vector3f(line.start).add(0.0f, -delta, 0.0f);
+        Vector3f endUp = new Vector3f(line.end).add(0.0f, delta, 0.0f);
+        Vector3f endDown = new Vector3f(line.end).add(0.0f, -delta, 0.0f);
+        transferSquare(startUp, startDown, endDown, endUp, 17);
+        transferSquare(endUp, endDown, startDown, startUp, 17);
     }
 
     public void transferBlock(Block block) {

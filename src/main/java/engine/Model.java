@@ -79,6 +79,16 @@ public class Model {
         return true;
     }
 
+    protected boolean checkPosToPlace(Vector3i block) {
+        final Vector3i adjustableProbPosition = EngineRuntime.getVector3i(getPosition());
+        final Vector3i cameraProbPos = EngineRuntime.getVector3i(getCameraPosition());
+        while (adjustableProbPosition.y <= cameraProbPos.y) {
+            if(adjustableProbPosition.equals(block)) return false;
+            adjustableProbPosition.add(0, 1, 0);
+        }
+        return true;
+    }
+
     private void moveForward(Vector3f movingOrientation, Set<Vector3i> nearestBlocks) {
         final Vector3f delta = new Vector3f(movingOrientation).mul(speed);
         final Vector3f dx = new Vector3f(delta).mul(0f, 0f, 16f), dz = new Vector3f(delta).mul(16f, 0f, 0f);
