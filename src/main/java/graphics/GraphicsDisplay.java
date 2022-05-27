@@ -182,8 +182,8 @@ public class GraphicsDisplay {
             int lightSize = glGetUniformLocation(shader.getId(), "lightSize");
             glUniform1i(lightSize, 2);
 
-            int lightVec = glGetUniformLocation(shader.getId(), "lightVec");
-            glUniform4fv(lightVec, new float[]{0.0f, 0.0f, 1.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f});
+            int lightColor = glGetUniformLocation(shader.getId(), "lightColor");
+            glUniform4fv(lightColor, new float[]{1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f});
 
             int lightPos = glGetUniformLocation(shader.getId(), "lightPos");
             glUniform3fv(lightPos, new float[]{0.0f, 10.0f, -10.0f, 0.0f, 10.0f, 10.0f});
