@@ -10,17 +10,34 @@ import java.util.Set;
 import static org.lwjgl.glfw.GLFW.*;
 import static controller.Commands.*;
 
+/**
+ * контроллер программы
+ */
 public class RTController {
+    /**
+     * Движок
+     */
     private EngineRuntime engineRuntime;
+    /**
+     * Графический дисплей
+     */
     private GraphicsDisplay graphicsDisplay;
-
+    /**
+     * Множество команд
+     */
     public Set<Commands> commandsSet;
+    /**
+     * Данные для команд, которые требуют одиночного нажатия
+     */
     private HashMap<Commands, Boolean> commandsHashSet;
-
-    public boolean wasInputHandled;
-
+    /**
+     * Индикатор выполнения программы
+     */
     private boolean isRunning = true;
 
+    /**
+     * Метод для запуска приложения
+     */
     public void run() {
         if (engineRuntime == null) throw new RuntimeException("engineRuntime was null");
         if (graphicsDisplay == null) throw new RuntimeException("graphicsDisplay was null");
@@ -31,7 +48,6 @@ public class RTController {
         commandsHashSet.put(JUMP, true);
         commandsHashSet.put(START_DEBUG, true);
         commandsHashSet.put(END_DEBUG, true);
-        wasInputHandled = true;
         Thread thread = new Thread(engineRuntime::run);
         thread.start();
         graphicsDisplay.run();
@@ -42,43 +58,92 @@ public class RTController {
         }
     }
 
+    /**
+     * Метод для захвата контроля над GUI
+     *
+     * @param graphicsDisplay захватываемый графический дисплей
+     */
     public void hookGraphicsDisplay(GraphicsDisplay graphicsDisplay) {
         this.graphicsDisplay = graphicsDisplay;
     }
 
+    /**
+     * Метод для захвата контроля над Engine
+     *
+     * @param engineRuntime захватываемый движок
+     */
     public void hookEngineRuntime(EngineRuntime engineRuntime) {
         this.engineRuntime = engineRuntime;
     }
 
+    /**
+     * Getter для движка
+     *
+     * @return движок
+     */
     public EngineRuntime getEngineRuntime() {
         return engineRuntime;
     }
 
+    /**
+     * @return графический дисплей
+     */
     public GraphicsDisplay getGraphicsDisplay() {
         return graphicsDisplay;
     }
 
+    /**
+     * Индикатор выполнения приложения
+     *
+     * @return выполняется ли приложение
+     */
     public boolean isRunning() {
         return isRunning;
     }
 
+    /**
+     * Метод вызова закрытия приложения
+     */
     public void toClose() {
         isRunning = false;
     }
 
+    /**
+     * метод для блокировки ключа комманды
+     *
+     * @param command комманда
+     */
     private void lockKey(Commands command) {
         commandsHashSet.put(command, false);
     }
 
+    /**
+     * метод для разблокировки ключа комманды
+     *
+     * @param command комманда
+     */
     private void unlockKey(Commands command) {
         commandsHashSet.put(command, true);
     }
 
+    /**
+     * метод для получения значения ключа для данной комманды
+     *
+     * @param command комманда
+     * @return ключ комманды
+     */
     private boolean getKeyValue(Commands command) {
         return commandsHashSet.get(command);
     }
 
-    private void keyHandler(long window, Commands command, int key){
+    /**
+     * метод для обработки комманд с единичным значением
+     *
+     * @param window  идентификатор окна
+     * @param command комманда
+     * @param key     ключ
+     */
+    private void keyHandler(long window, Commands command, int key) {
         if (getKeyValue(command) && glfwGetKey(window, key) == GLFW_PRESS) {
             commandsSet.add(command);
             lockKey(command);
@@ -86,7 +151,11 @@ public class RTController {
         if (!getKeyValue(command) && glfwGetKey(window, key) == GLFW_RELEASE) unlockKey(command);
     }
 
-
+    /**
+     * Преобразование клавиатурного ввода в команды
+     *
+     * @param window идентификатор окна
+     */
     public void Input(long window) {
         commandsSet = new LinkedHashSet<>();
 

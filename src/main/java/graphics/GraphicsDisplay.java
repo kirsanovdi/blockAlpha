@@ -2,6 +2,7 @@ package graphics;
 
 import controller.RTController;
 import controller.Settings;
+import engine.LightPoint;
 import graphics.translateObjects.Translation;
 import org.joml.Random;
 import org.joml.Vector3f;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
+import java.util.Set;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -24,34 +26,78 @@ import static org.lwjgl.opengl.GL46.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+/**
+ * Графический вывод, GUI
+ */
 public class GraphicsDisplay {
 
-    /**Параметры GUI*/
-    public final int width, height;
+    /**
+     * Ширина окна
+     */
+    public final int width;
+
+    /**
+     * Высота окна
+     */
+    public final int height;
+
+    /**
+     * Название окна
+     */
     private final String name;
+
+    /**
+     * идентификатор окна
+     */
     private long window;
-    /**Вспомогательные поля*/
+
+    /**
+     * Вспомогательные поля
+     */
     private double frames, lastTime;
-    
+
+    /**
+     * Контроллер
+     */
     private final RTController rtController;
+
+    /**
+     * Камера
+     */
     private final Camera camera;
 
-    /**Подсчёт и вывод fps*/
+    /**
+     * GLSL код вершинного шейдера
+     */
+    String vertexShaderSource;
+
+    /**
+     * GLSL код фрагментного шейдера
+     */
+    String fragmentShaderSource;
+
+
+    /**
+     * Подсчёт и вывод fps
+     */
     private void printRenderTime() {
         frames++;
         final double currentTime = glfwGetTime();
         if (currentTime - lastTime > 2.0) {
-            System.out.println("gui \t" + frames/2.0);
+            System.out.println("gui \t" + frames / 2.0);
             lastTime = currentTime;
             frames = 0;
         }
     }
 
-    String vertexShaderSource;
-
-    String fragmentShaderSource;
-
-    /**Основной коструктор*/
+    /**
+     * Основной коструктор GraphicsDisplay,
+     *
+     * @param rtController контроллер
+     * @param width        ширина окна
+     * @param height       высота окна
+     * @param name         название окна
+     */
     public GraphicsDisplay(RTController rtController, int width, int height, String name) {
         this.height = height;
         this.width = width;
@@ -67,7 +113,9 @@ public class GraphicsDisplay {
         }
     }
 
-    /**Запуск GUI*/
+    /**
+     * Запуск GUI
+     */
     public void run() {
         System.out.println("GraphicsDisplay has launched with LWJGL " + Version.getVersion());
 
@@ -83,11 +131,18 @@ public class GraphicsDisplay {
         glfwSetErrorCallback(null).free();
     }
 
-    public Camera getCamera(){
+    /**
+     * Getter для камеры
+     *
+     * @return камера
+     */
+    public Camera getCamera() {
         return camera;
     }
 
-    /**инициализация GLFW, окна и Callback функций*/
+    /**
+     * инициализация GLFW, окна и Callback функций
+     */
     private void init() {
         // Set up an error callback. The default implementation
         // will print the error message in System.err.
@@ -124,7 +179,7 @@ public class GraphicsDisplay {
 
             // Get the resolution of the primary monitor
             GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            if(videoMode == null) throw new RuntimeException("Failed ti get resolution of the primary monitor");
+            if (videoMode == null) throw new RuntimeException("Failed ti get resolution of the primary monitor");
 
             // Center the window
             glfwSetWindowPos(
@@ -143,7 +198,39 @@ public class GraphicsDisplay {
         glfwShowWindow(window);
     }
 
-    /**Метод, содержащий цикл отрисовки окна*/
+    /**
+     * Передача значений источников света в шейдер
+     *
+     * @param shader шейдер
+     */
+    private void translateLightPoints(Shader shader) {
+        int lightSize = glGetUniformLocation(shader.getId(), "lightSize");
+        int lightColor = glGetUniformLocation(shader.getId(), "lightColor");
+        int lightPos = glGetUniformLocation(shader.getId(), "lightPos");
+
+        Set<LightPoint> lightPoints = rtController.getEngineRuntime().lightPoints;
+        final int size = lightPoints.size();
+        float[] cords = new float[size * 3], colors = new float[size * 4];
+        int count = 0;
+        for (LightPoint point : lightPoints) {
+            colors[count * 4] = point.color.x;
+            colors[count * 4 + 1] = point.color.y;
+            colors[count * 4 + 2] = point.color.z;
+            colors[count * 4 + 3] = point.color.w;
+            cords[count * 3] = point.cord.x;
+            cords[count * 3 + 1] = point.cord.y;
+            cords[count * 3 + 2] = point.cord.z;
+            count++;
+        }
+
+        glUniform1i(lightSize, size);
+        glUniform4fv(lightColor, colors);
+        glUniform3fv(lightPos, cords);
+    }
+
+    /**
+     * Метод, содержащий цикл отрисовки окна
+     */
     private void loop() {
         GL.createCapabilities();
         glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
@@ -163,7 +250,6 @@ public class GraphicsDisplay {
 
         Translation translation = new Translation(dataTransformation);
 
-        //float f1 = 1f;
         while (!glfwWindowShouldClose(window)) {
 
             dataTransformation.update();
@@ -179,19 +265,12 @@ public class GraphicsDisplay {
             camera.mouseInput(window);
             camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");
 
-            int lightSize = glGetUniformLocation(shader.getId(), "lightSize");
-            glUniform1i(lightSize, 2);
+            translateLightPoints(shader);
 
-            int lightColor = glGetUniformLocation(shader.getId(), "lightColor");
-            glUniform4fv(lightColor, new float[]{1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f});
-
-            int lightPos = glGetUniformLocation(shader.getId(), "lightPos");
-            glUniform3fv(lightPos, new float[]{0.0f, 7.0f, -10.0f, 0.0f, 7.0f, 10.0f});
-            //vec3(0.0f, 10.0f, 0.0f)
             int camPos = glGetUniformLocation(shader.getId(), "camPos");
             glUniform3fv(camPos, new float[]{camera.position.x, camera.position.y, camera.position.z});
 
-            //f1 *= 0.999f;
+
             texture.bind();
             texture2.bind();
             translation.setupVAO();
