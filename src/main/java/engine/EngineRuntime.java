@@ -82,7 +82,8 @@ public class EngineRuntime {
         }
 
         try {
-            ConcurrentHashMap<Vector3i, Block> newBlocks = new ConcurrentHashMap<>();
+            //ConcurrentHashMap<Vector3i, Block> newBlocks = new ConcurrentHashMap<>();
+            blocks.clear();
             for (String line : Files.lines(new File(fileName).toPath()).toList()) {
                 final int[] cords = parseLine(line, Pattern.compile("cord=\\[.*?]"), 7, 2, Pattern.compile("\\s+"));
                 final int id = parseLine(line, Pattern.compile("id=.*?,"), 3, 1, Pattern.compile("\\s+"))[0];
@@ -91,9 +92,10 @@ public class EngineRuntime {
                 if (cords.length != 3 || sideIds.length != 6) throw new RuntimeException("state corruption");
 
                 Vector3i vector3i = new Vector3i(cords[0], cords[1], cords[2]);
-                newBlocks.put(vector3i, new Block(vector3i, id, sideIds));
+                createBlock(vector3i, id, sideIds);
+                //newBlocks.put(vector3i, new Block(vector3i, id, sideIds));
             }
-            blocks = newBlocks;
+            //blocks = newBlocks;
             System.out.println("state " + fileName + " loaded");
         } catch (IOException ex) {
             System.out.println("Cannot load state");
@@ -196,8 +198,12 @@ public class EngineRuntime {
     }
 
     private void createBlock(Vector3i vector3i, int id, int sideId) {
+        createBlock(vector3i, id, new int[]{sideId, sideId, sideId, sideId, sideId, sideId});
+    }
+
+    private void createBlock(Vector3i vector3i, int id, int[] sideIds) {
         Vector3i v3i = new Vector3i(vector3i);
-        blocks.put(v3i, new Block(v3i, id, new int[]{sideId, sideId, sideId, sideId, sideId, sideId}));
+        blocks.put(v3i, new Block(v3i, id, sideIds));
         updateBlockSpace(vector3i);
     }
 
@@ -249,7 +255,7 @@ public class EngineRuntime {
         if (commandsSet.contains(REMOVE) && selectedCord != null) removeBlock(selectedCord);
         Set<Vector3i> set = new LinkedHashSet<>();
         set.add(lastCord);
-        if (commandsSet.contains(ADD) && lastCord != null && model.checkMove(new Vector3f(0f,0f,0f), set)) createBlock(lastCord, 1, 17);
+        if (commandsSet.contains(ADD) && lastCord != null && model.checkMove(new Vector3f(0f,0f,0f), set)) createBlock(lastCord, 1, 19);
         if (commandsSet.contains(START_DEBUG)) settings.debug = true;
         if (commandsSet.contains(END_DEBUG)) settings.debug = false;
     }

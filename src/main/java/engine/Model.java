@@ -82,6 +82,7 @@ public class Model {
     private void moveForward(Vector3f movingOrientation, Set<Vector3i> nearestBlocks) {
         final Vector3f delta = new Vector3f(movingOrientation).mul(speed);
         final Vector3f dx = new Vector3f(delta).mul(0f, 0f, 16f), dz = new Vector3f(delta).mul(16f, 0f, 0f);
+        //position.add(delta);
         if (checkMove(dx, nearestBlocks))
             position.add(dx.mul(0.05f));
         if (checkMove(dz, nearestBlocks))

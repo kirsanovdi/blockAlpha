@@ -14,11 +14,13 @@ import static org.lwjgl.opengl.GL46.glGenerateMipmap;
 
 public class Texture {
     private final int texture;
+    private final int slot;
 
-    Texture(String path, int width, int height) {
-
+    Texture(String path, int slot, int width, int height) {
+        this.slot = slot;
         texture = glGenTextures();
-        glActiveTexture(texture);
+        //System.out.println(texture);
+        glActiveTexture(GL_TEXTURE0 + slot);
 
         bind();
 
@@ -66,6 +68,7 @@ public class Texture {
     }
 
     public void bind() {
+        glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, texture);
     }
 

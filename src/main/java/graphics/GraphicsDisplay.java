@@ -152,15 +152,18 @@ public class GraphicsDisplay {
 
         Shader shader = new Shader(vertexShaderSource, fragmentShaderSource);
 
-        Texture texture = new Texture(Settings.textureName, Settings.textureWidth, Settings.textureHeight);
+        Texture texture = new Texture(Settings.textureName, 0, Settings.textureWidth, Settings.textureHeight);
         texture.texUnit(shader, "tex0", 0);
+
+        Texture texture2 = new Texture("texturePackSpecularMap.png", 1, Settings.textureWidth, Settings.textureHeight);
+        texture2.texUnit(shader, "tex1", 1);
 
 
         DataTransformation dataTransformation = new DataTransformation(rtController);
 
         Translation translation = new Translation(dataTransformation);
 
-        float f1 = 1f;
+        //float f1 = 1f;
         while (!glfwWindowShouldClose(window)) {
 
             dataTransformation.update();
@@ -176,14 +179,21 @@ public class GraphicsDisplay {
             camera.mouseInput(window);
             camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");
 
-            int lightPos = glGetUniformLocation(shader.getId(), "lightPos");
-            glUniform3fv(lightPos, new float[]{camera.position.x, camera.position.y, camera.position.z});
+            int lightSize = glGetUniformLocation(shader.getId(), "lightSize");
+            glUniform1i(lightSize, 2);
 
+            int lightVec = glGetUniformLocation(shader.getId(), "lightVec");
+            glUniform4fv(lightVec, new float[]{0.0f, 0.0f, 1.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f});
+
+            int lightPos = glGetUniformLocation(shader.getId(), "lightPos");
+            glUniform3fv(lightPos, new float[]{0.0f, 10.0f, -10.0f, 0.0f, 10.0f, 10.0f});
+            //vec3(0.0f, 10.0f, 0.0f)
             int camPos = glGetUniformLocation(shader.getId(), "camPos");
             glUniform3fv(camPos, new float[]{camera.position.x, camera.position.y, camera.position.z});
 
-            f1 *= 0.999f;
+            //f1 *= 0.999f;
             texture.bind();
+            texture2.bind();
             translation.setupVAO();
 
             glDrawElements(GL_TRIANGLES, dataTransformation.indicesSize(), GL_UNSIGNED_INT, 0);
