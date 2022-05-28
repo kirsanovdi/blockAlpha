@@ -3,9 +3,20 @@ package graphics;
 import static org.lwjgl.opengl.GL46.*;
 import static org.lwjgl.opengl.GL46.glDeleteProgram;
 
+/**
+ * Шейдерная программа
+ */
 public class Shader {
+    /**
+     * id шейдерной программы
+     */
     private int id;
 
+    /**
+     * Конструктор шейдера, в котором происходит компилящия шейдерной программы
+     * @param vertexString GLSL код для вершинного шейдера
+     * @param fragmentString GLSL код для фрагментного шейдера
+     */
     Shader(String vertexString, String fragmentString) {
         int vertexShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertexShader, vertexString);
@@ -25,14 +36,24 @@ public class Shader {
         glDeleteShader(fragmentShader);
     }
 
+    /**
+     * Getter для id шейдера
+     * @return id шейдера
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Активация шейдерной программы
+     */
     void activate() {
         glUseProgram(id);
     }
 
+    /**
+     * Удаление шейдерной программы
+     */
     void delete() {
         glDeleteProgram(id);
     }

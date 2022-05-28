@@ -8,11 +8,11 @@ import org.joml.Vector4f;
  */
 public class LightPoint {
     /**
-     * координата источника света
+     * Координата источника света
      */
     public Vector3f cord;
     /**
-     * цвет источника света
+     * Цвет источника света
      */
     public Vector4f color;
 

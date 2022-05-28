@@ -47,7 +47,7 @@ public class GraphicsDisplay {
     private final String name;
 
     /**
-     * идентификатор окна
+     * Идентификатор окна
      */
     private long window;
 
@@ -141,7 +141,7 @@ public class GraphicsDisplay {
     }
 
     /**
-     * инициализация GLFW, окна и Callback функций
+     * Инициализация GLFW, окна и Callback функций
      */
     private void init() {
         // Set up an error callback. The default implementation
@@ -240,10 +240,10 @@ public class GraphicsDisplay {
         Shader shader = new Shader(vertexShaderSource, fragmentShaderSource);
 
         Texture texture = new Texture(Settings.textureName, 0, Settings.textureWidth, Settings.textureHeight);
-        texture.texUnit(shader, "tex0", 0);
+        texture.texUnit(shader, "tex0");
 
         Texture texture2 = new Texture("texturePackSpecularMap.png", 1, Settings.textureWidth, Settings.textureHeight);
-        texture2.texUnit(shader, "tex1", 1);
+        texture2.texUnit(shader, "tex1");
 
 
         DataTransformation dataTransformation = new DataTransformation(rtController);

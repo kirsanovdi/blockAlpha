@@ -1,5 +1,8 @@
 package controller;
 
+/**
+ * Настройки для движка и программы в целом
+ */
 public class Settings {
     public static final int translationSize = 20000000;
 
@@ -14,7 +17,14 @@ public class Settings {
 
     public static final float fovDeg = 100.0f;
 
+    /**
+     * Идентификатор режима отладки сцены
+     */
     public boolean debug;
+
+    /**
+     * Конструктор
+     */
     public Settings(){
         debug = false;
     }

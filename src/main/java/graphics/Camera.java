@@ -9,20 +9,54 @@ import static org.lwjgl.opengl.GL46.glGetUniformLocation;
 import static org.lwjgl.opengl.GL46.glUniformMatrix4fv;
 
 /**
- * камера
+ * Камера
  */
 public class Camera {
+    /**
+     * Вектор, указывающий направлекие вверх
+     */
     private final Vector3f up;
-    public final int width, height;
+    /**
+     * Ширина экрана
+     */
+    public final int width;
+    /**
+     * Высота экрана
+     */
+    public final int height;
 
-    public final Vector3f position, orientation;
+    /**
+     * Позиция камеры
+     */
+    public final Vector3f position;
+    /**
+     * Ориентация камеры
+     */
+    public final Vector3f orientation;
+    /**
+     * Чувствительность мыши
+     */
     public float sensitivity = 100.0f;
-
+    /**
+     * Число Пи
+     */
     private static final float pi = 3.14159265359f;
+    /**
+     * Идентификатор для контроля зажатия кнопки мыши
+     */
     private boolean firstClick;
 
+    /**
+     * Идентификатор для контроля захвата курсора
+     */
     private boolean cursorHookHandler = true;
 
+    /**
+     * Конструктор камеры
+     * @param width ширина экрана
+     * @param height высота экрана
+     * @param position начальная позиция камеры
+     */
     public Camera(int width, int height, Vector3f position) {
         up = new Vector3f(0.0f, 1.0f, 0.0f);
         firstClick = false;
@@ -32,6 +66,14 @@ public class Camera {
         this.position = position;
     }
 
+    /**
+     * Расчёт и передача в шейдер матрицы камеры
+     * @param FOVdeg угол обзора
+     * @param nearPlane близость прорисовки
+     * @param farPlane дальность прорисовки
+     * @param shader шейдер
+     * @param uniform uniform для матрицы камеры
+     */
     public void Matrix(float FOVdeg, float nearPlane, float farPlane, Shader shader, String uniform) {
         Matrix4f view = new Matrix4f();
         Vector3f center = new Vector3f().add(position).add(orientation);
@@ -48,12 +90,21 @@ public class Camera {
         }
     }
 
+    /**
+     * Задание позиции камеры.
+     * Переменная при этом не создаётся заново, происходит лишь изменение её полей
+     * @param position координаты новой позиции камеры
+     */
     public void setPos(Vector3f position) {
         this.position.x = position.x;
         this.position.y = position.y;
         this.position.z = position.z;
     }
 
+    /**
+     * Контроль ввода передвижения курсора
+     * @param window окно GUI
+     */
     public void mouseInput(long window) {
         if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) {
             cursorHookHandler = true;

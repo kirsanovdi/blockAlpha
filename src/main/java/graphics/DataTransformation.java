@@ -7,19 +7,41 @@ import engine.EngineRuntime;
 import engine.Line;
 import org.joml.Vector3f;
 
+/**
+ * Преобразователь данных движка в данные для отправки в видеопроцессор
+ */
 public class DataTransformation {
+    /**
+     * Движок
+     */
     private final EngineRuntime engineRuntime;
+    /**
+     * Массив индексов вершин
+     */
     private final int[] indicesRaw;
+    /**
+     * Массив значений вершин
+     */
     private final float[] cordsRaw;
 
+    /**
+     * Вспомогательные поля
+     */
     private int sizeI = 0, sizeC = 0, verticesCount = 0;
 
+    /**
+     * Конструктор преобразователя
+     * @param controller контроллер
+     */
     DataTransformation(RTController controller) {
         this.engineRuntime = controller.getEngineRuntime();
         indicesRaw = new int[Settings.translationSize];
         cordsRaw = new float[Settings.translationSize];
     }
 
+    /**
+     * Метод вызова обновления данных для трансфера
+     */
     public void update() {
         reset();
         for (Block block : engineRuntime.blocks.values()) {
@@ -32,18 +54,31 @@ public class DataTransformation {
         }
     }
 
+    /**
+     * Getter для получения массива преобразованных данных вершин
+     * @return массив преобразованных данных вершин
+     */
     public float[] getCords() {
         final float[] cords = new float[sizeC];
         System.arraycopy(cordsRaw, 0, cords, 0, sizeC);
         return cords;
     }
 
+    /**
+     * Getter для получения массива индексов
+     * @return массив индексов
+     */
     public int[] getIndices() {
         final int[] indices = new int[sizeI];
         System.arraycopy(indicesRaw, 0, indices, 0, sizeI);
         return indices;
     }
 
+    /**
+     * Добавление нового пакета данных в массиы значений и индексов
+     * @param cords массив добавляемых значений вершин
+     * @param indices массив добавляемых индексов
+     */
     private void transfer(float[] cords, int[] indices) {
         System.arraycopy(cords, 0, cordsRaw, sizeC, cords.length);
         System.arraycopy(indices, 0, indicesRaw, sizeI, indices.length);
@@ -51,16 +86,31 @@ public class DataTransformation {
         sizeI += indices.length;
     }
 
+    /**
+     * Обнуление значений вспомогательных полей
+     */
     private void reset() {
         sizeI = 0;
         sizeC = 0;
         verticesCount = 0;
     }
 
+    /**
+     * Размер массива индексов
+     * @return размер массива индексов
+     */
     public int indicesSize() {
         return sizeI;
     }
 
+    /**
+     * Преобразование и передача данных четырёхугольника(квадрата) в массивы индексов и значений вершин
+     * @param a первая координата квадрата
+     * @param b вторая координата квадрата
+     * @param c третья координата квадрата
+     * @param d четвёртая координата квадрата
+     * @param id id стороны
+     */
     public void transferSquare(Vector3f a, Vector3f b, Vector3f c, Vector3f d, long id) {
         final float yId = (float) (id / 16L) / 16.0f;
         final float xId = (float) (id % 16L) / 16.0f;
@@ -84,8 +134,12 @@ public class DataTransformation {
         transfer(tempCordsRaw, tempIndicesRaw);
     }
 
+    /**
+     * Преобразование и передача данных отрезка в массивы индексов и значений вершин
+     * @param line прямая(отрезок)
+     */
     private void transferLine(Line line){
-        final float delta = 0.01f;
+        final float delta = 0.001f;
         Vector3f startUp = new Vector3f(line.start).add(0.0f, delta, 0.0f);
         Vector3f startDown = new Vector3f(line.start).add(0.0f, -delta, 0.0f);
         Vector3f endUp = new Vector3f(line.end).add(0.0f, delta, 0.0f);
@@ -94,6 +148,10 @@ public class DataTransformation {
         transferSquare(endUp, endDown, startDown, startUp, 17);
     }
 
+    /**
+     * Преобразование и передача данных блока в массивы индексов и значений вершин
+     * @param block блок(куб)
+     */
     public void transferBlock(Block block) {
         final float delta = Settings.blockSize / 2.0f;
         final Vector3f center = new Vector3f(block.cord).add(delta, delta, delta);

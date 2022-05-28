@@ -11,25 +11,30 @@ import static org.lwjgl.glfw.GLFW.*;
 import static controller.Commands.*;
 
 /**
- * контроллер программы
+ * Контроллер программы
  */
 public class RTController {
+
     /**
      * Движок
      */
     private EngineRuntime engineRuntime;
+
     /**
      * Графический дисплей
      */
     private GraphicsDisplay graphicsDisplay;
+
     /**
      * Множество команд
      */
     public Set<Commands> commandsSet;
+
     /**
      * Данные для команд, которые требуют одиночного нажатия
      */
     private HashMap<Commands, Boolean> commandsHashSet;
+
     /**
      * Индикатор выполнения программы
      */
@@ -109,7 +114,7 @@ public class RTController {
     }
 
     /**
-     * метод для блокировки ключа комманды
+     * Метод для блокировки ключа комманды
      *
      * @param command комманда
      */
@@ -118,7 +123,7 @@ public class RTController {
     }
 
     /**
-     * метод для разблокировки ключа комманды
+     * Метод для разблокировки ключа комманды
      *
      * @param command комманда
      */
@@ -127,7 +132,7 @@ public class RTController {
     }
 
     /**
-     * метод для получения значения ключа для данной комманды
+     * Метод для получения значения ключа для данной комманды
      *
      * @param command комманда
      * @return ключ комманды
@@ -137,7 +142,7 @@ public class RTController {
     }
 
     /**
-     * метод для обработки комманд с единичным значением
+     * Метод для обработки комманд с единичным значением
      *
      * @param window  идентификатор окна
      * @param command комманда

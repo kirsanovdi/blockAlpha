@@ -10,15 +10,15 @@ import java.util.Set;
 import static controller.Commands.*;
 
 /**
- * модель для движка
+ * Модель для движка
  */
 public class Model {
     /**
-     * камера
+     * Камера
      */
     private Camera camera;
     /**
-     * координаты модели
+     * Координаты модели
      */
     private Vector3f position;
 
@@ -70,7 +70,7 @@ public class Model {
      * @param nearestBlocks ближайшие к можели блоки
      */
     public void handleInput(Set<Commands> commandsSet, Set<Vector3i> nearestBlocks) {
-        Vector3f orientation = new Vector3f(camera.orientation);
+        Vector3f orientation = getOrientation();
         orientation.y = 0f;
         orientation.normalize();
 
@@ -125,7 +125,7 @@ public class Model {
     }
 
     /**
-     * Движение вперёд
+     * Движение вперёд с учётом расположения ближайших блоков
      *
      * @param movingOrientation направление движения
      * @param nearestBlocks     ближайшие блоки
@@ -141,7 +141,7 @@ public class Model {
     }
 
     /**
-     * Движение назад
+     * Движение назад с учётом расположения ближайших блоков
      *
      * @param movingOrientation направление движения
      * @param nearestBlocks     ближайшие блоки
@@ -156,7 +156,7 @@ public class Model {
     }
 
     /**
-     * Движение вправо
+     * Движение вправо с учётом расположения ближайших блоков
      *
      * @param movingOrientation направление движения
      * @param nearestBlocks     ближайшие блоки
@@ -171,7 +171,7 @@ public class Model {
     }
 
     /**
-     * Движение влево
+     * Движение влево с учётом расположения ближайших блоков
      *
      * @param movingOrientation направление движения
      * @param nearestBlocks     ближайшие блоки
@@ -186,7 +186,7 @@ public class Model {
     }
 
     /**
-     * Метод имитации гравитации
+     * Метод имитации гравитации с учётом расположения ближайших блоков
      *
      * @param nearestBlocks ближайшие блоки
      */

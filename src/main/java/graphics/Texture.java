@@ -12,10 +12,26 @@ import static org.lwjgl.opengl.GL46.glGetUniformLocation;
 import static org.lwjgl.opengl.GL46.glUniform1i;
 import static org.lwjgl.opengl.GL46.glGenerateMipmap;
 
+/**
+ * Текстура(карта текстур) для отображения
+ */
 public class Texture {
+    /**
+     * Идентификатор текстуры
+     */
     private final int texture;
+    /**
+     * Слот ячейки текстуры
+     */
     private final int slot;
 
+    /**
+     * Конструктор текстуры
+     * @param path путь к файлу .png с текстурой
+     * @param slot слот ячейки текстуры
+     * @param width ширина текстуры в пикселях
+     * @param height высота текстуры в пикселях
+     */
     Texture(String path, int slot, int width, int height) {
         this.slot = slot;
         texture = glGenTextures();
@@ -61,21 +77,35 @@ public class Texture {
         unbind();
     }
 
-    public void texUnit(Shader shader, String uniform, int unit) {
+    /**
+     * Активация шейдера и задание слота для используемой текстуры
+     * @param shader шейдерная программв
+     * @param uniform uniform для tex0Uni
+     */
+    public void texUnit(Shader shader, String uniform) {
         int tex0Uni = glGetUniformLocation(shader.getId(), uniform);
         shader.activate();
-        glUniform1i(tex0Uni, unit);
+        glUniform1i(tex0Uni, slot);
     }
 
+    /**
+     * Активация текстуры и задание её как GL_TEXTURE_2D для шейдерной программы
+     */
     public void bind() {
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, texture);
     }
 
+    /**
+     * Задание GL_TEXTURE_2D как 0
+     */
     public void unbind() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    /**
+     * Удаление текстуры
+     */
     public void delete() {
         glDeleteTextures(texture);
     }

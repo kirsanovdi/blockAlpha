@@ -24,39 +24,39 @@ import static controller.Commands.*;
 public class EngineRuntime {
 
     /**
-     * хеш-таблица "координата(Vector3i) - блок(Block)" с безопасным многопоточным доступом
+     * Хеш-таблица "координата(Vector3i) - блок(Block)" с безопасным многопоточным доступом
      */
     public final ConcurrentHashMap<Vector3i, Block> blocks;
     /**
-     * множество прямых
+     * Множество прямых
      */
     public final Set<Line> lines;
     /**
-     * множество источников света
+     * Множество источников света
      */
     public final Set<LightPoint> lightPoints;
     /**
-     * контроллер
+     * Контроллер
      */
     private final RTController rtController;
     /**
-     * модель персонажа
+     * Модель персонажа
      */
     private final Model model;
     /**
-     * настройки сцены
+     * Настройки сцены
      */
     private final Settings settings;
     /**
-     * координата блока, на который смотрит камера
+     * Координата блока, на который смотрит камера
      */
     private Vector3i selectedCord;
     /**
-     * последняя обработанная в результате rayTrace() координата вне блоков
+     * Последняя обработанная в результате rayTrace() координата вне блоков
      */
     private Vector3i lastCord;
     /**
-     * первая обработанная в результате rayTrace() координата внутри блока
+     * Первая обработанная в результате rayTrace() координата внутри блока
      */
     private Vector3f selectedFloatCord;
 
@@ -393,7 +393,6 @@ public class EngineRuntime {
     public void run() {
         System.out.println("EngineRuntime started");
         while (rtController.isRunning()) {
-            removeId(-1);
             rayTrace();
 
             model.handleInput(rtController.commandsSet, getNearest(2));
