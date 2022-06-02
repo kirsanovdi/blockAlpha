@@ -69,13 +69,17 @@ public class GraphicsDisplay {
     /**
      * GLSL код вершинного шейдера
      */
-    String vertexShaderSource;
+    private String vertexShaderSource;
 
     /**
      * GLSL код фрагментного шейдера
      */
-    String fragmentShaderSource;
+    private String fragmentShaderSource;
 
+    /**
+     * Внешнее(Ambient) освещение
+     */
+    private float ambLight;
 
     /**
      * Подсчёт и вывод fps
@@ -87,6 +91,17 @@ public class GraphicsDisplay {
             System.out.println("gui \t" + frames / 2.0);
             lastTime = currentTime;
             frames = 0;
+        }
+    }
+
+    public void increaseAmbLight(){
+        if(ambLight <= 0.1f){
+            ambLight += 0.001;
+        }
+    }
+    public void decreaseAmbLight(){
+        if(ambLight >= 0.0f){
+            ambLight -= 0.001;
         }
     }
 
@@ -228,6 +243,11 @@ public class GraphicsDisplay {
         glUniform3fv(lightPos, cords);
     }
 
+    private void translateAmbientLight(Shader shader){
+        int ambLightPos = glGetUniformLocation(shader.getId(), "ambient");
+        glUniform1f(ambLightPos, ambLight);
+    }
+
     /**
      * Метод, содержащий цикл отрисовки окна
      */
@@ -266,6 +286,7 @@ public class GraphicsDisplay {
             camera.Matrix(45.0f, 0.1f, 10000.0f, shader, "camMatrix");
 
             translateLightPoints(shader);
+            translateAmbientLight(shader);
 
             int camPos = glGetUniformLocation(shader.getId(), "camPos");
             glUniform3fv(camPos, new float[]{camera.position.x, camera.position.y, camera.position.z});

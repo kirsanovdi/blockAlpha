@@ -2,11 +2,27 @@ package graphics.translateObjects;
 
 import graphics.DataTransformation;
 
+/**
+ * Транслятор данных в GPU
+ */
 public class Translation {
+    /**
+     * Вершинный буфер
+     */
     private final VBO vertexBufferObject;
+    /**
+     * Массив вершин
+     */
     private final VAO vertexArrayObject;
+    /**
+     * Элементный(индексный) буфер
+     */
     private final EBO elementBufferObject;
 
+    /**
+     * Конструктор
+     * @param dataTransformation преобразователь игфромации, откуда берутся данные для вершин и индексов
+     */
     public Translation(DataTransformation dataTransformation){
         vertexArrayObject = new VAO();
         vertexArrayObject.bind();
@@ -25,6 +41,9 @@ public class Translation {
         elementBufferObject.unbind();
     }
 
+    /**
+     * Повторная отправка данных
+     */
     public void update(){
         vertexArrayObject.bind();
         vertexBufferObject.bindRefresh();
@@ -39,10 +58,16 @@ public class Translation {
         elementBufferObject.unbind();
     }
 
+    /**
+     * Инициализация
+     */
     public void setupVAO(){
         vertexArrayObject.bind();
     }
 
+    /**
+     * Удаление VAO, VBO, EBO
+     */
     public void destroy(){
         vertexArrayObject.delete();
         vertexBufferObject.delete();

@@ -12,6 +12,7 @@
     uniform vec3 lightPos[100];
     uniform vec4 lightColor[100];
     uniform int lightSize;
+    uniform float ambient;
     uniform vec3 camPos;
 
     float getIntensity(float dist){
@@ -37,5 +38,5 @@
              diffuse += lightColor[i] * pow(max(dot(-normal, lightDirection), 0.0f), 2) * intensity;
          }
 
-         FragColor = texture(tex0, texCoord) * diffuse + texture(tex1, texCoord) * specular;
+         FragColor = texture(tex0, texCoord) * (diffuse + ambient) + texture(tex1, texCoord) * (specular + ambient);
     }

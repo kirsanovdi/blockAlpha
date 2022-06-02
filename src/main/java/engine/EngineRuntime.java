@@ -61,6 +61,11 @@ public class EngineRuntime {
     private Vector3f selectedFloatCord;
 
     /**
+     * id выбранного блока
+     */
+    private int selectedId;
+
+    /**
      * Конструктор класса EngineRuntime
      *
      * @param rtController контроллер
@@ -192,12 +197,12 @@ public class EngineRuntime {
      * @param delta расстояние от центра до края платформы
      * @return массив сгенерированных блоков
      */
-    public static Block[] generateBlockLayer(int delta) {
+    public static Block[] generateBlockLayer(Vector3i start, int delta) {
         final Block[] result = new Block[delta * delta];
         for (int z = 0; z < delta; z++) {
             for (int x = 0; x < delta; x++) {
                 final int sideId = 17;
-                result[z * delta + x] = new Block(new Vector3i(x - delta / 2, 5, z - delta / 2), 0, new int[]{sideId, sideId, sideId, sideId, sideId, sideId});
+                result[z * delta + x] = new Block(new Vector3i(start.x + x - delta / 2, start.y, start.z + z - delta / 2), 0, new int[]{sideId, sideId, sideId, sideId, sideId, sideId});
             }
         }
         return result;
@@ -235,6 +240,24 @@ public class EngineRuntime {
             }
         }
         return vector3is;
+    }
+
+    /**
+     * Ближайший к выбранному блоку источник света
+     * @return инсточник света (null, если такового нет или блок не выбран)
+     */
+    protected LightPoint getNearestLight() {
+        if( selectedCord == null || lightPoints.size() == 0 ) return null;
+        float dist = Float.MAX_VALUE;
+        LightPoint light = null;
+        for(LightPoint lightPoint: lightPoints){
+            final float newDist = selectedFloatCord.distance(lightPoint.cord);
+            if(dist > newDist){
+                dist = newDist;
+                light = lightPoint;
+            }
+        }
+        return light;
     }
 
     /**
@@ -373,18 +396,49 @@ public class EngineRuntime {
      * @param commandsSet множество команд из контроллера
      */
     private void handleInput(Set<Commands> commandsSet) {
-        if (commandsSet.contains(REMOVE) && selectedCord != null) removeBlock(selectedCord);
-        if (commandsSet.contains(ADD) && lastCord != null && model.checkPosToPlace(lastCord))
-            createBlock(lastCord, 1, 17);
-        if (commandsSet.contains(START_DEBUG) && selectedCord != null) {
-            synchronized (lines) {
-                lines.clear();
-                lines.add(new Line(model.getCameraPosition(), new Vector3f(selectedCord)));//settings.debug = true;
+        if (commandsSet.contains(REMOVE) && selectedCord != null) {
+            Block selectedBlock = blocks.get(selectedCord);
+            if(selectedBlock != null) {
+                removeBlock(selectedCord);
             }
         }
-        if (commandsSet.contains(END_DEBUG) && selectedFloatCord != null) {
+        if (commandsSet.contains(ADD) && lastCord != null && model.checkPosToPlace(lastCord))
+            createBlock(lastCord, 1, selectedId + 16);
+        if (commandsSet.contains(START_DEBUG)) settings.debug = true;
+        if (commandsSet.contains(END_DEBUG)) {
+            settings.debug = false;
+            lines.clear();
+        }
+        if (commandsSet.contains(PLACE_LIGHT) && selectedCord != null){
             lightPoints.add(new LightPoint(new Vector3f(selectedFloatCord).add(0.0f, 2.0f, 0.0f), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f)));
         }
+        if (commandsSet.contains(REMOVE_LIGHT)){
+            LightPoint nearLight = getNearestLight();
+            if(nearLight != null) lightPoints.remove(nearLight);
+        }
+        if(commandsSet.contains(CREATE_LEVEL)){
+            blocks.clear();
+            setBlocks(generateBlockLayer(new Vector3i(0, 5, 0), 25));
+        }
+        if(commandsSet.contains(ID0)) selectedId = 0;
+        if(commandsSet.contains(ID1)) selectedId = 1;
+        if(commandsSet.contains(ID2)) selectedId = 2;
+        if(commandsSet.contains(ID3)) selectedId = 3;
+    }
+
+    /**
+     * Тестовый метод
+     */
+    public void check(){
+        setBlocks(generateBlockLayer(new Vector3i(0, 0, 0), 1));
+        rayTrace();
+        createBlock(new Vector3i(0, 5, 0), 1, 1);
+        removeBlock(new Vector3i(0, 5, 0));
+        rayTrace();
+        getNearest(5);
+        getNearestLight();
+        rayTrace();
+        setBlocks(generateBlockLayer(new Vector3i(1, 0, 0), 1));
     }
 
     /**
@@ -398,7 +452,7 @@ public class EngineRuntime {
             model.handleInput(rtController.commandsSet, getNearest(2));
             this.handleInput(rtController.commandsSet);
 
-            synchronized (lines) {
+            if(settings.debug) synchronized (lines) {
                 lines.clear();
                 if (selectedFloatCord != null)
                     lines.add(new Line(model.getCameraPosition().add(model.getOrientation().normalize().cross(new Vector3f(0.0f, 1.0f, 0.0f)).mul(0.2f)), new Vector3f(selectedFloatCord)));//settings.debug = true;
