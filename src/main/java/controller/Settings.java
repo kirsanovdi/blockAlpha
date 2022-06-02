@@ -20,7 +20,7 @@ public class Settings {
     /**
      * Идентификатор режима отладки сцены
      */
-    public boolean debug;
+    public boolean debug = false;
 
     /**
      * Конструктор

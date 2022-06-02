@@ -53,6 +53,13 @@ public class RTController {
         commandsHashSet.put(JUMP, true);
         commandsHashSet.put(START_DEBUG, true);
         commandsHashSet.put(END_DEBUG, true);
+        commandsHashSet.put(PLACE_LIGHT, true);
+        commandsHashSet.put(REMOVE_LIGHT, true);
+        commandsHashSet.put(CREATE_LEVEL, true);
+        commandsHashSet.put(ID0, true);
+        commandsHashSet.put(ID1, true);
+        commandsHashSet.put(ID2, true);
+        commandsHashSet.put(ID3, true);
         Thread thread = new Thread(engineRuntime::run);
         thread.start();
         graphicsDisplay.run();
@@ -184,10 +191,20 @@ public class RTController {
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) commandsSet.add(LEFT);
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) commandsSet.add(RIGHT);
 
+        if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) graphicsDisplay.increaseAmbLight();
+        if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) graphicsDisplay.decreaseAmbLight();
+
+        keyHandler(window, ID0, GLFW_KEY_1);
+        keyHandler(window, ID1, GLFW_KEY_2);
+        keyHandler(window, ID2, GLFW_KEY_3);
+        keyHandler(window, ID3, GLFW_KEY_4);
+        keyHandler(window, CREATE_LEVEL, GLFW_KEY_U);
+        keyHandler(window, PLACE_LIGHT, GLFW_KEY_G);
+        keyHandler(window, REMOVE_LIGHT, GLFW_KEY_H);
         keyHandler(window, JUMP, GLFW_KEY_SPACE);
         keyHandler(window, REMOVE, GLFW_KEY_R);
         keyHandler(window, ADD, GLFW_KEY_T);
-        keyHandler(window, START_DEBUG, GLFW_KEY_1);
-        keyHandler(window, END_DEBUG, GLFW_KEY_2);
+        keyHandler(window, START_DEBUG, GLFW_KEY_9);
+        keyHandler(window, END_DEBUG, GLFW_KEY_0);
     }
 }
